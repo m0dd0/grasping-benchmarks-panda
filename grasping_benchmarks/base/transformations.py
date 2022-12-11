@@ -6,8 +6,6 @@ import numpy as np
 import math as m
 import warnings
 
-import struct
-
 
 def axis_angle_to_quaternion(vec_aa):
     """ Transform rotation from axis-angle to quaternion representation
