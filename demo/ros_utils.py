@@ -1,119 +1,51 @@
-from typing import Optional
+from typing import Optional  # pylint:disable
 
 import rospy
-
 import numpy as np
 import ros_numpy
-from geometry_msgs.msg import PoseStamped
 from nptyping import Float, Int, NDArray, Shape
+
+from geometry_msgs.msg import PoseStamped
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from std_msgs.msg import Header
 
 from grasping_benchmarks_ros.srv import GraspPlannerRequest
 
 
-# ========================
-#  Value Transformations
-# ========================
-_FLOAT_EPS = np.finfo(np.float64).eps
-
-def quat2mat(quat):
-    """Convert Quaternion to Euler Angles.  See rotation.py for notes"""
-    quat = np.asarray(quat, dtype=np.float64)
-    assert quat.shape[-1] == 4, "Invalid shape quat {}".format(quat)
-
-    w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
-    Nq = np.sum(quat * quat, axis=-1)
-    s = 2.0 / Nq
-    X, Y, Z = x * s, y * s, z * s
-    wX, wY, wZ = w * X, w * Y, w * Z
-    xX, xY, xZ = x * X, x * Y, x * Z
-    yY, yZ, zZ = y * Y, y * Z, z * Z
-
-    mat = np.empty(quat.shape[:-1] + (3, 3), dtype=np.float64)
-    mat[..., 0, 0] = 1.0 - (yY + zZ)
-    mat[..., 0, 1] = xY - wZ
-    mat[..., 0, 2] = xZ + wY
-    mat[..., 1, 0] = xY + wZ
-    mat[..., 1, 1] = 1.0 - (xX + zZ)
-    mat[..., 1, 2] = yZ - wX
-    mat[..., 2, 0] = xZ - wY
-    mat[..., 2, 1] = yZ + wX
-    mat[..., 2, 2] = 1.0 - (xX + yY)
-    return np.where((Nq > _FLOAT_EPS)[..., np.newaxis, np.newaxis], mat, np.eye(3))
-
-def posRotMat2TFMat(pos, rot_mat):
-    """Converts a position and a 3x3 rotation matrix to a 4x4 transformation matrix"""
-    t_mat = np.eye(4)
-    t_mat[:3, :3] = rot_mat
-    t_mat[:3, 3] = np.array(pos)
-    return t_mat
-
-# ==========================
-#  Image+PC Transformations
-# ==========================
-def rgb_float_to_int(rgb_float):
-    """
-    Covert rgb value from [0, 1] to [0, 255]
-    Args:
-        rgb_float: rgb array
-
-    Returns:
-        int rgb values
-    """
-    return (rgb_float * 255).astype(dtype=np.uint32)
-
-
-def rgb_array_to_uint32(rgb_array):
-    """
-    Pack 3 rgb values into 1 uint32 integer value using binary operations
-    Args:
-        rgb_array: array [num_samples, num_data=3]
-
-    Returns:
-        packed rgb integer value: [num_samples], dtype=np.uint32
-        From left to right:
-            0-8 bits: place holders (can be extent to additional channel)
-            9-16 bits: red
-            17-24 bits: green
-            25-32 bits: blue
-    """
-    rgb32 = np.zeros(rgb_array.shape[0], dtype=np.uint32)
-    rgb_array = rgb_array.astype(dtype=np.uint32)
-    rgb32[:] = (
-        np.left_shift(rgb_array[:, 0], 16)
-        + np.left_shift(rgb_array[:, 1], 8)
-        + rgb_array[:, 2]
-    )
-    return rgb32
-
-def transform_pc(pc_points, pos, quat, inverse=False):
-    mat = posRotMat2TFMat(pos, quat2mat(quat))
-    if inverse:
-        mat = np.linalg.inv(mat)
-
-    pc_points_extended = np.append(pc_points, np.ones((pc_points.shape[0], 1)), axis=1)
-
-    rotated_pointwise_array = np.einsum("...i, ji->...j", pc_points_extended, mat)
-
-    return rotated_pointwise_array[:, :3]
-
-# ========================
-#  MSG Creators
-# ========================
+###  MSG Creators
 def create_grasp_planner_request(
-        rgb_img: NDArray[Shape["*, *, 3"], Float],
-        depth_img: NDArray[Shape["*, *"], Float],
-        seg_img: NDArray[Shape["*, *"], Int],
-        pc_points: NDArray[Shape["*, 3"], Float],
-        pc_colors: NDArray[Shape["*, 3"], Int],
-        cam_pos: NDArray[Shape["3"], Float],
-        cam_quat: NDArray[Shape["4"], Float],
-        cam_intrinsics: NDArray[Shape["3, 3"], Float],
-        cam_height: float,
-        cam_width: float,
-        num_of_candidates: int
+    rgb_img: NDArray[Shape["*, *, 3"], Float],
+    depth_img: NDArray[Shape["*, *"], Float],
+    seg_img: NDArray[Shape["*, *"], Int],
+    pc_points: NDArray[Shape["*, 3"], Float],
+    pc_colors: NDArray[Shape["*, 3"], Int],
+    cam_pos: NDArray[Shape["3"], Float],
+    cam_quat: NDArray[Shape["4"], Float],
+    cam_intrinsics: NDArray[Shape["3, 3"], Float],
+    cam_height: float,
+    cam_width: float,
+    num_of_candidates: int,
 ) -> GraspPlannerRequest:
+    """Creates a GraspRequest object (see grasping_benchmark_ros/sev/GraspPlanner.srv)
+    from the provided data by performing all necessary conversions.
+    The 'grasp_filter_flag' and 'aruco_board' property of the service are ignored.
+
+    Args:
+        rgb_img (NDArray[Shape[): _description_
+        depth_img (NDArray[Shape[): _description_
+        seg_img (NDArray[Shape[): _description_
+        pc_points (NDArray[Shape[): _description_
+        pc_colors (NDArray[Shape[): _description_
+        cam_pos (NDArray[Shape[&quot;3&quot;], Float]): _description_
+        cam_quat (NDArray[Shape[&quot;4&quot;], Float]): _description_
+        cam_intrinsics (NDArray[Shape[&quot;3, 3&quot;], Float]): _description_
+        cam_height (float): _description_
+        cam_width (float): _description_
+        num_of_candidates (int): _description_
+
+    Returns:
+        GraspPlannerRequest: _description_
+    """
     planner_req = GraspPlannerRequest()
 
     header = Header()
@@ -123,20 +55,34 @@ def create_grasp_planner_request(
     planner_req.color_image = rgb_img_to_ros_msg(rgb_img, header)
     planner_req.depth_image = depth_img_to_ros_msg(depth_img, header)
     planner_req.seg_image = seg_img_to_ros_msg(seg_img, header)
-    planner_req.cloud = pc_to_ros_msg(pc_points, pc_colors, header)
-    planner_req.view_point = pos_quat_to_ros_msg(cam_pos, cam_quat, header)
+
     planner_req.camera_info = cam_intrinsics_to_ros_msg(
         cam_intrinsics, cam_height, cam_width, header
     )
+
+    planner_req.cloud = pc_to_ros_msg(pc_points, pc_colors, header)
+    planner_req.view_point = pos_quat_to_ros_msg(cam_pos, cam_quat, header)
+
     planner_req.n_of_candidates = num_of_candidates
 
     return planner_req
+
 
 def pos_quat_to_ros_msg(
     pos: NDArray[Shape["3"], Float],
     quat: NDArray[Shape["4"], Float],
     header: Optional[Header] = None,
 ) -> PoseStamped:
+    """Converts a given position vector and rotation quaternion to a ROS Pose message.
+
+    Args:
+        pos (NDArray[Shape[3], Float]): The position vector.
+        quat (NDArray[Shape[4], Float]): The orientation quaternion.
+        header (Optional[Header], optional): A header for the ROS message. Defaults to None.
+
+    Returns:
+        PoseStamped: The resulting ROS Pose message.
+    """
     pos_msg = PoseStamped()
 
     if header is not None:
@@ -271,4 +217,93 @@ def cam_intrinsics_to_ros(cam):
     return camera_info
 
 
+### image anfd pointcloud transformations
+def rgb_float_to_int(rgb_float):
+    """
+    Covert rgb value from [0, 1] to [0, 255]
+    Args:
+        rgb_float: rgb array
 
+    Returns:
+        int rgb values
+    """
+    return (rgb_float * 255).astype(dtype=np.uint32)
+
+
+def rgb_array_to_uint32(rgb_array):
+    """
+    Pack 3 rgb values into 1 uint32 integer value using binary operations
+    Args:
+        rgb_array: array [num_samples, num_data=3]
+
+    Returns:
+        packed rgb integer value: [num_samples], dtype=np.uint32
+        From left to right:
+            0-8 bits: place holders (can be extent to additional channel)
+            9-16 bits: red
+            17-24 bits: green
+            25-32 bits: blue
+    """
+    rgb32 = np.zeros(rgb_array.shape[0], dtype=np.uint32)
+    rgb_array = rgb_array.astype(dtype=np.uint32)
+    rgb32[:] = (
+        np.left_shift(rgb_array[:, 0], 16)
+        + np.left_shift(rgb_array[:, 1], 8)
+        + rgb_array[:, 2]
+    )
+    return rgb32
+
+# ========================
+#  Value Transformations
+# ========================
+# _FLOAT_EPS = np.finfo(np.float64).eps
+
+# def quat2mat(quat):
+#     """Convert Quaternion to Euler Angles.  See rotation.py for notes"""
+#     quat = np.asarray(quat, dtype=np.float64)
+#     assert quat.shape[-1] == 4, "Invalid shape quat {}".format(quat)
+
+#     w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+#     Nq = np.sum(quat * quat, axis=-1)
+#     s = 2.0 / Nq
+#     X, Y, Z = x * s, y * s, z * s
+#     wX, wY, wZ = w * X, w * Y, w * Z
+#     xX, xY, xZ = x * X, x * Y, x * Z
+#     yY, yZ, zZ = y * Y, y * Z, z * Z
+
+#     mat = np.empty(quat.shape[:-1] + (3, 3), dtype=np.float64)
+#     mat[..., 0, 0] = 1.0 - (yY + zZ)
+#     mat[..., 0, 1] = xY - wZ
+#     mat[..., 0, 2] = xZ + wY
+#     mat[..., 1, 0] = xY + wZ
+#     mat[..., 1, 1] = 1.0 - (xX + zZ)
+#     mat[..., 1, 2] = yZ - wX
+#     mat[..., 2, 0] = xZ - wY
+#     mat[..., 2, 1] = yZ + wX
+#     mat[..., 2, 2] = 1.0 - (xX + yY)
+#     return np.where((Nq > _FLOAT_EPS)[..., np.newaxis, np.newaxis], mat, np.eye(3))
+
+# def posRotMat2TFMat(pos, rot_mat):
+#     """Converts a position and a 3x3 rotation matrix to a 4x4 transformation matrix"""
+#     t_mat = np.eye(4)
+#     t_mat[:3, :3] = rot_mat
+#     t_mat[:3, 3] = np.array(pos)
+#     return t_mat
+
+
+# ==========================
+#  Image+PC Transformations
+# ==========================
+
+
+
+# def transform_pc(pc_points, pos, quat, inverse=False):
+#     mat = posRotMat2TFMat(pos, quat2mat(quat))
+#     if inverse:
+#         mat = np.linalg.inv(mat)
+
+#     pc_points_extended = np.append(pc_points, np.ones((pc_points.shape[0], 1)), axis=1)
+
+#     rotated_pointwise_array = np.einsum("...i, ji->...j", pc_points_extended, mat)
+
+#     return rotated_pointwise_array[:, :3]
