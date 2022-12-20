@@ -1,18 +1,16 @@
-import os
-from typing import Tuple
+"""
+"""
 
-# Importing Typings
-import nptyping
-from nptyping import Float, Int, NDArray, Shape
+from typing import Tuple, Union
+from pathlib import Path
 
-from ros_utils import *
-from vis_utils import *
-
-# Importing general ROS Info
 import rospy
-
 import numpy as np
 import yaml
+from nptyping import Float, NDArray, Shape
+
+from ros_utils import create_grasp_planner_request
+from vis_utils import visualize_grasp
 
 # Importing Grasp Planner ROS Packages
 from grasping_benchmarks_ros.srv import (
@@ -21,41 +19,41 @@ from grasping_benchmarks_ros.srv import (
     GraspPlannerResponse,
 )
 
-# from grasping_benchmarks.base.base_grasp_planner import BaseGraspPlanner as GraspPlanner
-# from grasping_benchmarks.base.base_grasp_planner import
-
-NUMBER_OF_CANDIDATES = 1
-
 
 def create_grasp_planner_request_from_demo_data(
-    input_folder: str,
-) -> GraspPlannerRequest:
-    """_summary_
+    input_folder: Union[str, Path]
+) -> Tuple[GraspPlannerRequest, np.array, np.array]:
+    """Creates a GraspPlannerRequest from the data in the input_folder.
+    Only one grasp candidate will be requested.
+    The input folder must contain data like in the "example_data" folder.
+    Also returns the sample point cloud data
 
     Args:
-        input_folder (str): _description_
+        input_folder (Union[str, Path]): The location of the folder from where the data for the
+            request comes.
 
     Returns:
-        GraspPlannerRequest: _description_
+        Tuple[GraspPlannerRequest, np.array, np.array]: The ROS GraspPlannerRequest
+            amd the pointcloud points and pointcloud colors.
     """
-    seg_img = np.load(os.path.join(input_folder, "seg_img.npy"), allow_pickle=True)
-    rgb_img = np.load(os.path.join(input_folder, "rgb_img.npy"), allow_pickle=True)
-    depth_img = np.load(os.path.join(input_folder, "depth_img.npy"), allow_pickle=True)
+    # load sample image data
+    seg_img = np.load(Path(input_folder) / "seg_img.npy", allow_pickle=True)
+    rgb_img = np.load(Path(input_folder) / "rgb_img.npy", allow_pickle=True)
+    depth_img = np.load(Path(input_folder) / "depth_img.npy", allow_pickle=True)
 
-    pc = np.load(os.path.join(input_folder, "pointcloud.npz"), allow_pickle=True)
+    # load sample point cloud data
+    pc = np.load(Path(input_folder) / "pointcloud.npz", allow_pickle=True)
     pc_points = pc["pc_points"]
     pc_colors = pc["pc_colors"]
 
-    with open(os.path.join(input_folder, "cam_info.yaml"), "r") as stream:
+    # get sample camera parameters
+    with open(Path(input_folder) / "cam_info.yaml", "r", encoding="utf-8") as stream:
         cam_info = yaml.safe_load(stream)
-        print(cam_info.keys())
     cam_pos = np.array(cam_info["cam_pos"])
     cam_quat = np.array(cam_info["cam_quat"])
     cam_intrinsics = np.array(cam_info["cam_intrinsics"])
     cam_height = cam_info["cam_height"]
     cam_width = cam_info["cam_width"]
-
-    visualize_pointcloud(pc_points, pc_colors, cam_pos)
 
     return (
         create_grasp_planner_request(
@@ -69,7 +67,7 @@ def create_grasp_planner_request_from_demo_data(
             cam_intrinsics,
             cam_height,
             cam_width,
-            NUMBER_OF_CANDIDATES,
+            1,
         ),
         pc_points,
         pc_colors,
@@ -85,6 +83,7 @@ def call_grasp_planner(
         _type_: _description_
     """
 
+    # get the request from the sample data
     planner_req, pc_points, pc_colors = create_grasp_planner_request_from_demo_data(
         input_folder
     )
@@ -93,14 +92,12 @@ def call_grasp_planner(
     grasp_planner = rospy.ServiceProxy(service_id, GraspPlanner)
 
     try:
+        # get the grasp plannet reply: this is a list of BenchMarkGrasp messages
         reply: GraspPlannerResponse = grasp_planner(planner_req)
-        print("Service {} reply is: \n{}".format(grasp_planner.resolved_name, reply))
+        # print(f"Service {grasp_planner.resolved_name} reply is: \n{reply}")
+        grasp = reply.grasp_candidates[0]
 
-        print([candidate.pose.pose.position.z for candidate in reply.grasp_candidates])
-        max_pos_idx = np.argmax(
-            [candidate.pose.pose.position.z for candidate in reply.grasp_candidates]
-        )
-        pose = reply.grasp_candidates[max_pos_idx].pose.pose
+        pose = grasp.pose.pose
         position = [pose.position.x, pose.position.y, pose.position.z]
         quat = [
             pose.orientation.w,
@@ -108,13 +105,12 @@ def call_grasp_planner(
             pose.orientation.y,
             pose.orientation.z,
         ]
-        width = reply.grasp_candidates[max_pos_idx].width.data
+        width = grasp.width.data
 
-        visualize_grasp(pc_points, pc_colors, position, quat, width)
-        return position, quat
+        return position, quat, width, pc_points, pc_colors
 
     except rospy.ServiceException as e:
-        print("Service {} call failed: {}".format(grasp_planner.resolved_name, e))
+        print(f"Service {grasp_planner.resolved_name} call failed: {e}")
 
 
 def main():
@@ -125,9 +121,14 @@ def main():
     superquadrics_service = "/superquadric_bench/superq_grasp_planner_service"
     gpd_service = "/gpd_bench/gpd_grasp_planner/gpd_grasp_planner_service"
     dexnet_service = "/dexnet_bench/dexnet_grasp_planner_service"
-    # 2. Calling the grasp planner
-    pos, quat = call_grasp_planner("example_data", service_id=gpd_service)
+    
+    # Calling the grasp planner
+    pos, quat = call_grasp_planner(
+        Path(__file__).parent / "example_data", service_id=superquadrics_service
+    )
 
+    # visualization seems to be broken
+    # visualize_grasp(pc_points, pc_colors, position, quat, width)
 
 if __name__ == "__main__":
     main()
