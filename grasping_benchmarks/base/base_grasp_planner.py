@@ -17,14 +17,15 @@ class CameraData:
         depth_image: np.ndarray = None,  # depth_img
         pointcloud: np.ndarray = None,  # pc_image
         segmentation_image: np.ndarray = None,  # seg_image
-        bounding_box=None,
+        bounding_box=None, # bounding box around target object ?
         intrinsic_params=None,
         extrinsic_params=None,
     ):
         self.rgb_image = rgb_image
         self.depth_image = depth_image
         self.pointcloud = pointcloud
-        self.segmentation_image
+        self.segmentation_image = segmentation_image
+        self.bounding_box = bounding_box
         self.intrinsic_params = intrinsic_params
         self.extrinsic_params = extrinsic_params
 
@@ -45,10 +46,13 @@ class BaseGraspPlanner(object):
             cfg (Dict): Dictionary of configuration parameters.
         """
         self.cfg = cfg
-        self._grasp_poses = []
+        # maintains a list of the lastly proposed grasp candidates
+        self._grasp_poses = [] 
+        # containes the best grasp candidate of the last plan_grasp call
         self._best_grasp = None
+        # contains the camera data send to the last plan_grasp call 
         self._camera_data = CameraData()
-        self._grasp_offset = np.zeros(3)
+        # self._grasp_offset = np.zeros(3)
 
     def reset(self):
         """Sets the GraspPlanner back to its inital state. Especially removes all
@@ -80,7 +84,7 @@ class BaseGraspPlanner(object):
 
     @grasp_poses.setter
     def grasp_poses(self, grasp_poses: List[Grasp6D]):
-        if not all([type(p) is Grasp6D for p in grasp_poses]):
+        if not all([isinstance(p, Grasp6D) for p in grasp_poses]):
             raise ValueError(
                 "Invalid grasp type. Must be `benchmark_grasping.grasp.Grasp6D`"
             )
