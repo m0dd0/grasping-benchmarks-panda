@@ -4,11 +4,8 @@ from grconvnet_grasping.orig.load_models import load_pretrained_models
 from grasping_benchmarks.base.base_grasp_planner import BaseGraspPlanner, CameraData
 
 
-
-
 class GRConvNetGraspPlanner(BaseGraspPlanner):
     def __init__(self, model_name, version_name):
-
         cfg = {"model_name": model_name, "version_name": version_name}
         super(GRConvNetGraspPlanner, self).__init__(cfg)
 
@@ -25,6 +22,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         """
 
         self._camera_data = camera_data
+
+        
 
         
         self._best_grasp = 
