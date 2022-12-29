@@ -13,6 +13,7 @@ from grasping_benchmarks.base.grasp import Grasp6D
 class CameraData:
     def __init__(
         self,
+        # TODO use nptyping
         rgb_image: np.ndarray = None,  # rgb_img
         depth_image: np.ndarray = None,  # depth_img
         pointcloud: np.ndarray = None,  # pc_image
