@@ -1,0 +1,11 @@
+model_name: "cornell-randsplit-rgbd-grconvnet3-drop1-ch32"
+version_name: "epoch_15_iou_97.pt"
+device: null
+segment_rgb: True
+preprocessing_resize: True
+postprocessing_n_candidates: 3
+postprocessing_width_scale: 150
+postprocessing_min_grasp_distance: 20 
+postprocessing_quality_threshold: 0.2
+postprocessing_blur: True
+conversion_convert_angle: False
