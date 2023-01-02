@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+
 from alr_sim.utils.geometric_transformation import quat2mat
 
 import rospy
@@ -85,3 +87,14 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         grasp_msg.width.data = grasp.width
 
         return grasp_msg
+
+
+if __name__ == "__main__":
+    rospy.init_node("grconvnet_grasp_planner_service")
+
+    config_file = rospy.get_param("~config_file")
+    grasp_service_name = rospy.get_param("~grasp_service_name")
+
+    GRConvNetGraspPlannerService(config_file, grasp_service_name)
+
+    rospy.spin()
