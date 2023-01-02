@@ -92,7 +92,7 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 if __name__ == "__main__":
     rospy.init_node("grconvnet_grasp_planner_service")
 
-    config_file = rospy.get_param("~config_file")
+    config_file = Path(rospy.get_param("~config_file"))
     grasp_service_name = rospy.get_param("~grasp_service_name")
 
     GRConvNetGraspPlannerService(config_file, grasp_service_name)
