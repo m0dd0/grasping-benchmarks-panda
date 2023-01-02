@@ -42,8 +42,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         self,
         model_name: str,
         version_name: str,
-        segment_rgb: bool,
         device: str,
+        segment_rgb: bool,
         preprocessing_resize: bool,
         postprocessing_n_candidates: int,
         postprocessing_width_scale: float,
@@ -60,6 +60,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             device (str): _description_
             segment_rgb (bool): _description_
             preprocessing_resize (bool): _description_
+            postprocessing_n_candidates (int): _description_
             postprocessing_width_scale (float): _description_
             postprocessing_min_grasp_distance (int): _description_
             postprocessing_quality_threshold (float): _description_
@@ -84,6 +85,12 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         self.model_path = get_model_path(model_name, version_name)
         self.segment_rgb = segment_rgb
         self.device = device
+        if device is None:
+            self.device = (
+                torch.device("cuda")
+                if torch.cuda.is_available()
+                else torch.device("cpu")
+            )
         self.preprocess_resize = preprocessing_resize
         self.postprocess_n_candidates = postprocessing_n_candidates
         self.postprocess_width_scale = postprocessing_width_scale
@@ -97,6 +104,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         self.angle_img = None
         self.width_img = None
         self.preprocessed_rgb = None
+        self.image_grasps = None
 
     def _convert_grasp_from_6D(self, grasp: Grasp6D) -> GrconvnetGrasp:
         """Converts a Grasp6D grasp to a GRConvNet grasp
@@ -171,7 +179,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         visualization_preprocessor = VisualizationPreprocessor(
             resize=self.preprocess_resize
         )
-        preprocessed_rgb, preprocessed_depth = visualization_preprocessor(sample)
+        preprocessed_rgb, _ = visualization_preprocessor(sample)
 
         with torch.no_grad():
             prediction = model(input_tensor)
