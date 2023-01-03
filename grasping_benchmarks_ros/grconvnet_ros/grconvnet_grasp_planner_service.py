@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 
 import numpy as np
 
-from alr_sim.utils.geometric_transformation import quat2mat
+from alr_sim.utils.geometric_transformation import (
+    quat2mat,
+)  # TODO use transformation from this package
 
 import rospy
 from geometry_msgs.msg import PoseStamped
@@ -23,7 +27,9 @@ from grasping_benchmarks.grconvnet.grconvnet_grasp_planner import GRConvNetGrasp
 
 
 class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
-    def __init__(self, config_file: Path, grasp_service_name: str):
+    def __init__(
+        self, config_file: Path, grasp_service_name: str, grasp_planner_topic_name: str
+    ):
         GRConvNetGraspPlanner.from_config_file(config_file)
         # super().__init__() # is called by GRConvNetGraspPlanner.from_config_file(config_file)
 
@@ -31,6 +37,8 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         self._grasp_planning_service = rospy.Service(
             grasp_service_name, GraspPlanner, self.plan_grasp_handler
         )
+
+        # TODO: implement publisher
 
         self.cv_bridge = CvBridge()
 
@@ -90,11 +98,14 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
 
 if __name__ == "__main__":
-    rospy.init_node("grconvnet_grasp_planner_service")
+    rospy.init_node("grconvnet_grasp_planner")
 
-    config_file = Path(rospy.get_param("~config_file"))
-    grasp_service_name = rospy.get_param("~grasp_service_name")
+    # TODO make parameters from the config gile rosparameters
 
-    GRConvNetGraspPlannerService(config_file, grasp_service_name)
+    GRConvNetGraspPlannerService(
+        Path(rospy.get_param("~config_file")),
+        rospy.get_param("~grasp_planner_service_name"),
+        rospy.get_param("~grasp_planner_topic_name"),
+    )
 
     rospy.spin()

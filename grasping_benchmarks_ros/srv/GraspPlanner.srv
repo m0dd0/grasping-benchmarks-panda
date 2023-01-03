@@ -2,15 +2,19 @@
 
 # color and depth images
 sensor_msgs/Image color_image
-sensor_msgs/Image depth_image
+sensor_msgs/Image depth_image # in mm
 sensor_msgs/Image seg_image
 
 # camera info and intrinsics
 sensor_msgs/CameraInfo camera_info
 
-# pointcloud and viewpoint
-sensor_msgs/PointCloud2 cloud # is in world frame
+# pointcloud
+sensor_msgs/PointCloud2 cloud # in world frame
+
+# camera parameers
 geometry_msgs/PoseStamped view_point
+
+# additional parameters
 geometry_msgs/Pose aruco_board
 bool grasp_filter_flag
 

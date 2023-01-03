@@ -19,4 +19,8 @@ setuptools.setup(
     package_data={"grasping_benchmarks": config_files},
     python_requires=">=3",
     install_requires=["scipy", "numpy", "pyyaml"],
+    extras_require={
+        "dev": ["black", "pylint"],
+        "grconvnet": ["numpy<1.24", "ros_numpy"],
+    },
 )

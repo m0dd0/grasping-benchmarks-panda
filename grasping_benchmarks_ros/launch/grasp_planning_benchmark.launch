@@ -102,13 +102,14 @@
   <!-- Run GRConvNet Grasp Planner -->
   <group if="$(optenv GRASP_BENCHMARK_GRCONVNET false)">
     <arg name="ns" default="grconvnet_bench" />
-    <arg name="grasp_planner_service_name" default="grconvnet_grasp_planner" />
+    <arg name="grasp_planner_node_name" default="grconvnet_grasp_planner_node" />
+    <arg name="grasp_planner_service_name" default="grconvnet_grasp_planner_service" />
+    <arg name="grasp_planner_topic_name" default="grconvnet_grasp_topic" />
 
     <node name="grconvnet_grasp_planner" pkg="grasping_benchmarks_ros" type="grconvnet_grasp_planner_service.py" ns="$(arg ns)" output="screen">
+      <param name="grasp_planner_node_name" value="$(arg grasp_planner_node_name)" />
       <param name="grasp_planner_service_name" value="$(arg grasp_planner_service_name)" />
-      <param name="grasp_publisher_name" value="$(arg grasp_publisher_name)" />
-      <param name="visualize_grasp" value="$(optenv VISUALIZE_GRASP false)" />
-      <rosparam param="grasp_pose_offset" subst_value="True">$(arg grasp_pose_offset)</rosparam>
+      <param name="grasp_planner_topic_name" value="$(arg grasp_planner_topic_name)" />
     </node>
   </group>
 
