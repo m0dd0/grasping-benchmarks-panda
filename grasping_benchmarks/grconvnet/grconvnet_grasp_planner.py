@@ -8,6 +8,7 @@ import yaml
 import numpy as np
 import torch
 from PIL import Image
+from matplotlib import pyplot as plt
 
 from grconvnet.utils.load_models import get_model_path
 from grconvnet.inference import GenerativeResnet
@@ -136,7 +137,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
                 3
             ),  # grasp is alway parallel to the z-axis, assumes that rotation is relative to unit z-axis # TODO: check this
             width=grasp.width,
-            score=grasp.score,  # TODO find out scale of score and adjust if necessary
+            score=grasp.quality,  # TODO find out scale of score and adjust if necessary
             ref_frame="world",
         )
 
@@ -153,24 +154,30 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
 
         self._camera_data = camera_data
 
-        rgb = camera_data.rgb_img 
-        depth = camera_data.depth_img # TODO convert datatype --> chceck datatype of cornell depth image
+        rgb = camera_data.rgb_img
+        depth = camera_data.depth_img
         cam_intrinsics = camera_data.cam_intrinsics
         cam_pos = camera_data.cam_pos
         cam_rot = camera_data.cam_rot
+
+        # for some conversions in the preprocessing pipeline certain encodings of the image are needed
+        # the depth image is given in meters as float32
+        depth = np.array(depth / 1000, dtype=np.float32)
+        # rgb image is already coreclty encoded (uint8)
 
         # set all pixels to white where the segmentation mask is 0
         mask = camera_data.seg_img
         rgb_seg = np.full(rgb.shape, 255)
         rgb_seg[mask] = rgb[mask]
+        rgb_seg = rgb_seg.astype(np.uint8)
 
         model = GenerativeResnet()
         model.load_state_dict(torch.jit.load(self.model_path).state_dict())
         model.to(self.device)
 
         sample = GrconvnetCameraData(
-            Image.fromarray(np.uint8(rgb_seg if self.segment_rgb else rgb)),
-            Image.fromarray(np.uint8(depth),
+            Image.fromarray(rgb_seg if self.segment_rgb else rgb),
+            Image.fromarray(depth),
         )
 
         preprocessor = Preprocessor(resize=self.preprocess_resize)
@@ -202,7 +209,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         )
         grasps_world = [img2world_converter(g, np.asarray(depth)) for g in grasps_img]
 
-        self._grasp_poses = [self._convert_grasp(grasp) for grasp in grasps_world]
+        self._grasp_poses = [self._convert_grasp_to_6D(grasp) for grasp in grasps_world]
 
         # safe some data for visualization
         self.quality_img = quality_img

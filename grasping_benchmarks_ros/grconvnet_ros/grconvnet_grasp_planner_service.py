@@ -55,30 +55,8 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
         self.cv_bridge = CvBridge()
 
-    def req_to_cam_data(self, req: GraspPlannerRequest) -> CameraData:
-        rgb = ros_numpy.numpify(req.color_image)
-        depth = ros_numpy.numpify(req.depth_image)
-        seg = ros_numpy.numpify(req.seg_image)
-
-        camera_matrix = req.camera_info.K
-
-        # 4x4 homogenous tranformation matrix
-        camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
-
-        camera_data = CameraData(
-            rgb,
-            depth,
-            None,  # point cloud is not needed by the grconvnet algo
-            seg,
-            camera_matrix,
-            camera_trafo_h[:3, 3],
-            camera_trafo_h[:3, :3],
-        )
-
-        return camera_data
-
     def plan_grasp_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
-        camera_data = self.req_to_cam_data(req)
+        camera_data = CameraData.from_grasp_planner_request(req)
 
         n_candidates = req.n_of_candidates if req.n_of_candidates else 1
 
