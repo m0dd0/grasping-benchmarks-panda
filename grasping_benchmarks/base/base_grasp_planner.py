@@ -6,7 +6,7 @@ from typing import Dict, List
 from abc import abstractmethod
 
 import numpy as np
-from nptyping import NDArray, Float, Shape, Uint8, Uint16
+from nptyping import NDArray, Float, Shape, UInt8, UInt16
 
 ROS_AVAILABLE = True
 try:
@@ -28,9 +28,9 @@ class CameraData:
         depth = ros_numpy.numpify(req.depth_image)
         seg = ros_numpy.numpify(req.seg_image)
 
-        # TODO point cloud conversion
+        pc = ros_numpy.numpify(req.cloud)
 
-        camera_matrix = req.camera_info.K
+        camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
 
         # 4x4 homogenous tranformation matrix
         camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
@@ -38,8 +38,9 @@ class CameraData:
         camera_data = CameraData(
             rgb,
             depth,
-            None,
+            pc,  # TODO check format and convert if needed
             seg,
+            None,  # bounding box is not included in the request
             camera_matrix,
             camera_trafo_h[:3, 3],
             camera_trafo_h[:3, :3],
@@ -49,11 +50,11 @@ class CameraData:
 
     def __init__(
         self,
-        rgb_img: NDArray[Shape["H, W, 3"], Uint8] = None,  # rgb_img
-        depth_img: NDArray[Shape["H, W"], Uint16] = None,  # depth_img
-        pointcloud: NDArray[Shape["N, 3"]] = None,  # pc_image
-        seg_img: NDArray[Shape["H, W"], Uint8] = None,  # seg_image
-        bounding_box=None, # TODO
+        rgb_img: NDArray[Shape["H, W, 3"], UInt8] = None,  # rgb_img
+        depth_img: NDArray[Shape["H, W"], UInt16] = None,  # depth_img
+        pointcloud: NDArray[Shape["N, 3"], Float] = None,  # pc_image
+        seg_img: NDArray[Shape["H, W"], UInt8] = None,  # seg_image
+        bounding_box=None,  # TODO
         cam_intrinsics: NDArray[Shape["3, 3"], Float] = None,
         cam_pos: NDArray[Shape["3"], Float] = None,
         cam_rot: NDArray[Shape["3, 3"], Float] = None,
