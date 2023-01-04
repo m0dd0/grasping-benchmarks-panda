@@ -18,8 +18,7 @@ from grconvnet.preprocessing import Preprocessor, VisualizationPreprocessor
 from grconvnet.postprocessing import Postprocessor, Img2WorldConverter
 from grconvnet import visualization
 
-from grasping_benchmarks.base.base_grasp_planner import BaseGraspPlanner, CameraData
-from grasping_benchmarks.base.grasp import Grasp6D
+from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
 
 
 class GRConvNetGraspPlanner(BaseGraspPlanner):
