@@ -18,9 +18,18 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={"grasping_benchmarks": config_files},
     python_requires=">=3",
-    install_requires=["scipy", "numpy", "pyyaml"],
+    install_requires=["numpy", "nptyping"],  # requirements from the base classes
     extras_require={
         "dev": ["black", "pylint"],
-        "grconvnet": ["numpy<1.24", "ros_numpy"],
+        "grconvnet": [
+            "numpy<1.24",
+            "ros_numpy",
+            "nptyping",
+            "pyyaml",
+            "torch",
+            "Pillow",
+            "scipy",
+            "grconvnet @ git+https://github.com/m0dd0/robotic-grasping@develop#egg=grconvnet",
+        ],
     },
 )
