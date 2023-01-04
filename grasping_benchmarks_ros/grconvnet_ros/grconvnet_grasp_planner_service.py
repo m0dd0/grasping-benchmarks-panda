@@ -58,10 +58,8 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
             n_candidates=n_candidates,
         )
 
-        grasps_ros = [self._6DGrasp_2_grasp_response(grasp) for grasp in grasps]
-
         response = GraspPlannerResponse()
-        for g in grasps_ros:
+        for g in grasps:
             response.grasp_candidates.append(g.to_ros_message())
 
         return response
