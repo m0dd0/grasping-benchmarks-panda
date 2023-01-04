@@ -12,8 +12,7 @@ from grasping_benchmarks_ros.srv import (
     GraspPlannerResponse,
 )
 
-from grasping_benchmarks.base.base_grasp_planner import CameraData
-from grasping_benchmarks.base.grasp import Grasp6D
+from grasping_benchmarks.base import CameraData
 
 from grasping_benchmarks.grconvnet.grconvnet_grasp_planner import GRConvNetGraspPlanner
 
