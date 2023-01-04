@@ -102,6 +102,7 @@
   <!-- Run GRConvNet Grasp Planner -->
   <group if="$(optenv GRASP_BENCHMARK_GRCONVNET false)">
     <arg name="ns" default="grconvnet_bench" />
+    <arg name="config_file" default="$(find grasping_benchmarks_ros)/grconvnet_ros/cfg/base_config.yaml" />
     <arg name="grasp_planner_node_name" default="grconvnet_grasp_planner_node" />
     <arg name="grasp_planner_service_name" default="grconvnet_grasp_planner_service" />
     <arg name="grasp_planner_topic_name" default="grconvnet_grasp_topic" />
@@ -110,6 +111,7 @@
       <param name="grasp_planner_node_name" value="$(arg grasp_planner_node_name)" />
       <param name="grasp_planner_service_name" value="$(arg grasp_planner_service_name)" />
       <param name="grasp_planner_topic_name" value="$(arg grasp_planner_topic_name)" />
+      <param name="config_file" value="$(arg config_file)" />
     </node>
   </group>
 

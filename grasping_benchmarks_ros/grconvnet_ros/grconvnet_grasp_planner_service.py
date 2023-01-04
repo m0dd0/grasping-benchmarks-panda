@@ -2,9 +2,7 @@
 
 from pathlib import Path
 
-import numpy as np
-
-from scipy.spatial.transform import Rotation as R
+import yaml
 
 import rospy
 from geometry_msgs.msg import PoseStamped
@@ -25,11 +23,28 @@ from grasping_benchmarks.grconvnet.grconvnet_grasp_planner import GRConvNetGrasp
 
 
 class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
+    @classmethod
+    def from_config_file(
+        cls, config_file: Path, grasp_service_name: str, grasp_planner_topic_name: str
+    ) -> "GRConvNetGraspPlanner":
+        """Creates a new instance of the GRConvNetGraspPlanner from a config file.
+
+        Args:
+            config_file (Path): Path to the yaml config file. The yaml file must
+                contain the same parameters as the __init__ method.
+
+        Returns:
+            GRConvNetGraspPlanner: The new instance
+        """
+        with open(config_file, "r") as f:
+            cfg = yaml.safe_load(f)
+
+        return cls(grasp_service_name, grasp_planner_topic_name, **cfg)
+
     def __init__(
-        self, config_file: Path, grasp_service_name: str, grasp_planner_topic_name: str
+        self, grasp_service_name: str, grasp_planner_topic_name: str, *args, **kwargs
     ):
-        GRConvNetGraspPlanner.from_config_file(config_file)
-        # super().__init__() # is called by GRConvNetGraspPlanner.from_config_file(config_file)
+        super().__init__(*args, **kwargs)
 
         # Initialize the ROS service
         self._grasp_planning_service = rospy.Service(
@@ -43,24 +58,26 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
     def req_to_cam_data(self, req: GraspPlannerRequest) -> CameraData:
         rgb = ros_numpy.numpify(req.color_image)
         depth = ros_numpy.numpify(req.depth_image)
-        seg = ros_numpy.numpify(req.segmentation_image)
+        seg = ros_numpy.numpify(req.seg_image)
 
         camera_matrix = req.camera_info.K
 
-        camera_pos = np.asarray(req.view_point.position)
-        camera_quat = np.asarray(req.view_point.orientation)
-
-        camera_rotation = R.from_quat(
-            np.append(camera_quat[1:], camera_quat[0])
-        ).as_matrix()
+        # 4x4 homogenous tranformation matrix
+        camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
 
         camera_data = CameraData(
-            rgb, depth, seg, camera_matrix, camera_pos, camera_rotation
+            rgb,
+            depth,
+            None,  # point cloud is not needed by the grconvnet algo
+            seg,
+            camera_matrix,
+            camera_trafo_h[:3, 3],
+            camera_trafo_h[:3, :3],
         )
 
         return camera_data
 
-    def plan_grasp_handler(self, req: GraspPlannerRequest):
+    def plan_grasp_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
         camera_data = self.req_to_cam_data(req)
 
         n_candidates = req.n_of_candidates if req.n_of_candidates else 1
@@ -104,7 +121,7 @@ if __name__ == "__main__":
 
     # TODO make parameters from the config gile rosparameters
 
-    GRConvNetGraspPlannerService(
+    GRConvNetGraspPlannerService.from_config_file(
         Path(rospy.get_param("~config_file")),
         rospy.get_param("~grasp_planner_service_name"),
         rospy.get_param("~grasp_planner_topic_name"),

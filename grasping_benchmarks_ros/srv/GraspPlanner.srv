@@ -1,9 +1,9 @@
 # request params for grasp planners (not all of these must be filled in)
 
 # color and depth images
-sensor_msgs/Image color_image
-sensor_msgs/Image depth_image # in mm
-sensor_msgs/Image seg_image
+sensor_msgs/Image color_image # rgb8 (=uint8) encoded
+sensor_msgs/Image depth_image # in mm, 16UC1 (=uint16) encoded 
+sensor_msgs/Image seg_image # 8UC1 (=uin8) encoded
 
 # camera info and intrinsics
 sensor_msgs/CameraInfo camera_info
