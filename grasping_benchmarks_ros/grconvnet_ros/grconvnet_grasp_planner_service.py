@@ -5,16 +5,12 @@ from pathlib import Path
 import yaml
 
 import rospy
-from geometry_msgs.msg import PoseStamped
-from cv_bridge import CvBridge
-import ros_numpy
 
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,
     GraspPlannerRequest,
     GraspPlannerResponse,
 )
-from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
 from grasping_benchmarks.base.base_grasp_planner import CameraData
 from grasping_benchmarks.base.grasp import Grasp6D
@@ -53,8 +49,6 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
         # TODO: implement publisher
 
-        self.cv_bridge = CvBridge()
-
     def plan_grasp_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
         camera_data = CameraData.from_grasp_planner_request(req)
 
@@ -69,29 +63,9 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
         response = GraspPlannerResponse()
         for g in grasps_ros:
-            response.grasp_candidates.append(g)
+            response.grasp_candidates.append(g.to_ros_message())
 
         return response
-
-    def _6DGrasp_2_grasp_response(self, grasp: Grasp6D):
-        grasp_msg = BenchmarkGrasp()
-
-        p = PoseStamped()
-        p.header.frame_id = grasp.ref_frame
-        p.header.stamp = rospy.Time.now()
-        p.pose.position.x = grasp.position[0]
-        p.pose.position.y = grasp.position[1]
-        p.pose.position.z = grasp.position[2]
-        p.pose.orientation.x = grasp.quaternion[0]
-        p.pose.orientation.y = grasp.quaternion[1]
-        p.pose.orientation.z = grasp.quaternion[2]
-        p.pose.orientation.w = grasp.quaternion[3]
-        grasp_msg.pose = p
-
-        grasp_msg.score.data = grasp.score
-        grasp_msg.width.data = grasp.width
-
-        return grasp_msg
 
 
 if __name__ == "__main__":

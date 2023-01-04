@@ -8,6 +8,14 @@ import numpy as np
 
 from grasping_benchmarks.base import transformations
 
+ROS_AVAILABLE = True
+try:
+    from grasping_benchmarks_ros.msg import BenchmarkGrasp
+    import rospy
+    from geometry_msgs.msg import PoseStamped
+except ImportError as e:
+    ROS_AVAILABLE = False
+
 
 class Grasp6D(object):
     def __init__(
@@ -51,7 +59,7 @@ class Grasp6D(object):
             rotation = np.array(rotation).astype(np.float32)
 
         self._check_valid_rotation(rotation)
-        self._rotation = rotation * 1.0 # FIXME ?
+        self._rotation = rotation * 1.0  # FIXME ?
 
         self._quaternion = transformations.matrix_to_quaternion(rotation)
 
@@ -118,3 +126,26 @@ class Grasp6D(object):
             raise ValueError(
                 "position must be specified as a 3-vector, 3x1 ndarray, or 1x3 ndarray"
             )
+
+    def to_ros_message(self) -> "BenchmarkGrasp":
+        if not ROS_AVAILABLE:
+            raise ImportError("ROS is not available")
+
+        grasp_msg = BenchmarkGrasp()
+
+        p = PoseStamped()
+        p.header.frame_id = self.ref_frame
+        p.header.stamp = rospy.Time.now()
+        p.pose.position.x = self.position[0]
+        p.pose.position.y = self.position[1]
+        p.pose.position.z = self.position[2]
+        p.pose.orientation.x = self.quaternion[0]
+        p.pose.orientation.y = self.quaternion[1]
+        p.pose.orientation.z = self.quaternion[2]
+        p.pose.orientation.w = self.quaternion[3]
+        grasp_msg.pose = p
+
+        grasp_msg.score.data = self.score
+        grasp_msg.width.data = self.width
+
+        return grasp_msg
