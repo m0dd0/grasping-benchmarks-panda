@@ -4,9 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from alr_sim.utils.geometric_transformation import (
-    quat2mat,
-)  # TODO use transformation from this package
+from scipy.spatial.transform import Rotation as R
 
 import rospy
 from geometry_msgs.msg import PoseStamped
@@ -52,8 +50,12 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         camera_pos = np.asarray(req.view_point.position)
         camera_quat = np.asarray(req.view_point.orientation)
 
+        camera_rotation = R.from_quat(
+            np.append(camera_quat[1:], camera_quat[0])
+        ).as_matrix()
+
         camera_data = CameraData(
-            rgb, depth, seg, camera_matrix, camera_pos, quat2mat(camera_quat)
+            rgb, depth, seg, camera_matrix, camera_pos, camera_rotation
         )
 
         return camera_data
