@@ -10,14 +10,17 @@ import numpy as np
 import torch
 from PIL import Image
 from scipy.spatial.transform import Rotation
-from matplotlib import pyplot as plt
 
 from grconvnet.utils.load_models import get_model_path
 from grconvnet.inference import GenerativeResnet
 from grconvnet.datatypes import RealGrasp as GrconvnetRealGrasp
 from grconvnet.datatypes import CameraData as GrconvnetCameraData
 from grconvnet.preprocessing import Preprocessor, VisualizationPreprocessor
-from grconvnet.postprocessing import Postprocessor, Img2WorldConverter
+from grconvnet.postprocessing import (
+    Postprocessor,
+    Img2WorldConverter,
+    GraspHeightAdjuster,
+)
 from grconvnet import visualization
 
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
@@ -53,6 +56,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         postprocessing_quality_threshold: float,
         postprocessing_blur: bool,
         conversion_convert_angle: bool,
+        conversion_min_height: int,
+        conversion_gripper_height_threshold: int,
     ):
         """_summary_
 
@@ -68,6 +73,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             postprocessing_quality_threshold (float): _description_
             postprocessing_blur (bool): _description_
             conversion_convert_angle (bool): _description_
+            conversion_min_height (int): _description_
+            conversion_gripper_height_threshold (int): _description_
         """
         cfg = {
             "model_name": model_name,
@@ -81,6 +88,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             "postprocessing_quality_threshold": postprocessing_quality_threshold,
             "postprocessing_blur": postprocessing_blur,
             "conversion_convert_angle": conversion_convert_angle,
+            "conversion_min_height": conversion_min_height,
+            "conversion_gripper_height_threshold": conversion_gripper_height_threshold,
         }
         super(GRConvNetGraspPlanner, self).__init__(cfg)
 
@@ -100,6 +109,8 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         self.postprocess_quality_threshold = postprocessing_quality_threshold
         self.postprocess_blur = postprocessing_blur
         self.conversion_convert_angle = conversion_convert_angle
+        self.conversion_min_height = conversion_min_height
+        self.conversion_gripper_height_threshold = conversion_gripper_height_threshold
 
         # for visualization we keep this data
         self.quality_img = None
@@ -215,6 +226,11 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             resized_in_preprocess=self.preprocess_resize,
         )
         grasps_world = [img2world_converter(g, np.asarray(depth)) for g in grasps_img]
+
+        height_adjuster = GraspHeightAdjuster(
+            self.conversion_min_height, self.conversion_gripper_height_threshold
+        )
+        grasps_world = [height_adjuster(g) for g in grasps_world]
 
         self._grasp_poses = [self._convert_grasp_to_6D(grasp) for grasp in grasps_world]
 

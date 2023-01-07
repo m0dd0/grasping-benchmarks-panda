@@ -9,3 +9,5 @@ postprocessing_min_grasp_distance: 20
 postprocessing_quality_threshold: 0.2
 postprocessing_blur: True
 conversion_convert_angle: False
+conversion_min_height: 0.01
+conversion_gripper_height_threshold: 0.04
