@@ -24,7 +24,11 @@ from grasping_benchmarks.grconvnet.grconvnet_grasp_planner import GRConvNetGrasp
 class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
     @classmethod
     def from_config_file(
-        cls, config_file: Path, grasp_service_name: str, grasp_planner_topic_name: str
+        cls,
+        config_file: Path,
+        grasp_service_name: str,
+        grasp_planner_topic_name: str,
+        visualization_service_name: str,
     ) -> "GRConvNetGraspPlanner":
         """Creates a new instance of the GRConvNetGraspPlanner from a config file.
 
@@ -38,10 +42,20 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         with open(config_file, "r") as f:
             cfg = yaml.safe_load(f)
 
-        return cls(grasp_service_name, grasp_planner_topic_name, **cfg)
+        return cls(
+            grasp_service_name,
+            grasp_planner_topic_name,
+            visualization_service_name,
+            **cfg
+        )
 
     def __init__(
-        self, grasp_service_name: str, grasp_planner_topic_name: str, *args, **kwargs
+        self,
+        grasp_service_name: str,
+        grasp_planner_topic_name: str,
+        visualization_service_name: str,
+        *args,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
 
@@ -51,7 +65,7 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         )
 
         self._visualization_service = rospy.Service(
-            "visualization_service_name", GraspVisualizer, self.visualize_srv_handler
+            visualization_service_name, GraspVisualizer, self.visualize_srv_handler
         )
 
         # TODO: implement publisher
@@ -72,9 +86,14 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
         return response
 
-    def visualize_srv_handler(self, req) -> GraspVisualizerResponse:
+    def visualize_srv_handler(
+        self, req: GraspVisualizerRequest
+    ) -> GraspVisualizerResponse:
+        target_path = Path(req.target_path)
+
         fig = self.visualize()
-        fig.savefig("/home/moritz/Documents/grasp.png")
+        fig.savefig(target_path)
+
         response = GraspVisualizerResponse()
         return response
 
@@ -88,6 +107,7 @@ if __name__ == "__main__":
         Path(rospy.get_param("~config_file")),
         rospy.get_param("~grasp_planner_service_name"),
         rospy.get_param("~grasp_planner_topic_name"),
+        rospy.get_param("~visualization_service_name"),
     )
 
     rospy.spin()

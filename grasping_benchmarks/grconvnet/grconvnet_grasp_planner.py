@@ -240,6 +240,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             camera_matrix=self._camera_data.cam_intrinsics,
             camera_rotation=self._camera_data.cam_rot,
             camera_position=self._camera_data.cam_pos,
+            figsize=(10, 10),
         )
 
         return fig
