@@ -30,6 +30,7 @@ setuptools.setup(
             "Pillow",
             "rospkg",
             "grconvnet @ git+https://github.com/m0dd0/robotic-grasping@develop#egg=grconvnet",
+            "scipy",
         ],
     },
 )

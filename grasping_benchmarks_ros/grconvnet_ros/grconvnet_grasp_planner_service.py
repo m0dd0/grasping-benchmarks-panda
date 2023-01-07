@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import yaml
+from matplotlib import pyplot as plt
 
 import rospy
 
@@ -10,6 +11,9 @@ from grasping_benchmarks_ros.srv import (
     GraspPlanner,
     GraspPlannerRequest,
     GraspPlannerResponse,
+    GraspVisualizer,
+    GraspVisualizerRequest,
+    GraspVisualizerResponse,
 )
 
 from grasping_benchmarks.base import CameraData
@@ -43,12 +47,16 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
 
         # Initialize the ROS service
         self._grasp_planning_service = rospy.Service(
-            grasp_service_name, GraspPlanner, self.plan_grasp_handler
+            grasp_service_name, GraspPlanner, self.plan_grasp_srv_handler
+        )
+
+        self._visualization_service = rospy.Service(
+            "visualization_service_name", GraspVisualizer, self.visualize_srv_handler
         )
 
         # TODO: implement publisher
 
-    def plan_grasp_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
+    def plan_grasp_srv_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
         camera_data = CameraData.from_grasp_planner_request(req)
 
         n_candidates = req.n_of_candidates if req.n_of_candidates else 1
@@ -62,6 +70,12 @@ class GRConvNetGraspPlannerService(GRConvNetGraspPlanner):
         for g in grasps:
             response.grasp_candidates.append(g.to_ros_message())
 
+        return response
+
+    def visualize_srv_handler(self, req) -> GraspVisualizerResponse:
+        fig = self.visualize()
+        fig.savefig("/home/moritz/Documents/grasp.png")
+        response = GraspVisualizerResponse()
         return response
 
 

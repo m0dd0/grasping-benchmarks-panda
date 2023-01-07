@@ -51,7 +51,7 @@ class CameraData:
     def __init__(
         self,
         rgb_img: NDArray[Shape["H, W, 3"], UInt8] = None,  # rgb_img
-        depth_img: NDArray[Shape["H, W"], UInt16] = None,  # depth_img
+        depth_img: NDArray[Shape["H, W"], UInt16] = None,  # depth_img in mm
         pointcloud: NDArray[Shape["N, 3"], Float] = None,  # pc_image
         seg_img: NDArray[Shape["H, W"], UInt8] = None,  # seg_image
         bounding_box=None,  # TODO

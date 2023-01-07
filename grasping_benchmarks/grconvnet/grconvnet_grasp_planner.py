@@ -8,6 +8,7 @@ import yaml
 import numpy as np
 import torch
 from PIL import Image
+from scipy.spatial.transform import Rotation
 from matplotlib import pyplot as plt
 
 from grconvnet.utils.load_models import get_model_path
@@ -118,7 +119,10 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         return GrconvnetRealGrasp(
             center=grasp.position,
             width=grasp.width,
-            score=grasp.score,  # TODO find out scale of score and adjust if necessary
+            angle=Rotation.from_matrix(grasp.rotation).as_euler("xyz", degrees=False)[
+                2
+            ],
+            quality=grasp.score,  # TODO find out scale of score and adjust if necessary
         )
 
     def _convert_grasp_to_6D(self, grasp: GrconvnetRealGrasp) -> Grasp6D:
@@ -132,9 +136,10 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         """
         return Grasp6D(
             position=grasp.center,
-            rotation=np.eye(
-                3
-            ),  # grasp is alway parallel to the z-axis, assumes that rotation is relative to unit z-axis # TODO: check this
+            # grasp is alway parallel to the z-axis, assumes that rotation is relative to unit z-axis # TODO: check this
+            rotation=Rotation.from_euler(
+                "xyz", (0, 0, grasp.angle), degrees=False
+            ).as_matrix(),
             width=grasp.width,
             score=grasp.quality,  # TODO find out scale of score and adjust if necessary
             ref_frame="world",
@@ -153,31 +158,33 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
 
         self._camera_data = camera_data
 
+        # get all the necesssary data from the camera data
         rgb = camera_data.rgb_img
         depth = camera_data.depth_img
         cam_intrinsics = camera_data.cam_intrinsics
         cam_pos = camera_data.cam_pos
         cam_rot = camera_data.cam_rot
+        seg_img = camera_data.seg_img
 
         # for some conversions in the preprocessing pipeline certain encodings of the image are needed
-        # the depth image is given in meters as float32
+        # the depth image in the original implementation is given in meters as float32
         depth = np.array(depth / 1000, dtype=np.float32)
         # rgb image is already coreclty encoded (uint8)
 
         # set all pixels to white where the segmentation mask is 0
-        mask = camera_data.seg_img
+        mask = seg_img == 1
         rgb_seg = np.full(rgb.shape, 255)
         rgb_seg[mask] = rgb[mask]
         rgb_seg = rgb_seg.astype(np.uint8)
-
-        model = GenerativeResnet()
-        model.load_state_dict(torch.jit.load(self.model_path).state_dict())
-        model.to(self.device)
 
         sample = GrconvnetCameraData(
             Image.fromarray(rgb_seg if self.segment_rgb else rgb),
             Image.fromarray(depth),
         )
+
+        model = GenerativeResnet()
+        model.load_state_dict(torch.jit.load(self.model_path).state_dict())
+        model.to(self.device)
 
         preprocessor = Preprocessor(resize=self.preprocess_resize)
         input_tensor = torch.unsqueeze(preprocessor(sample), 0).to(self.device)
@@ -229,11 +236,9 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             width_img=self.width_img,
             image_grasps=self.image_grasps,
             world_grasps=[self._convert_grasp_from_6D(g) for g in self._grasp_poses],
-            camera_matrix=self._camera_data.intrinsic_params,
+            camera_matrix=self._camera_data.cam_intrinsics,
             camera_rotation=self._camera_data.cam_rot,
             camera_position=self._camera_data.cam_pos,
         )
-
-        plt.show()
 
         return fig
