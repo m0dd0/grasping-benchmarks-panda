@@ -3,6 +3,7 @@
 
 from pathlib import Path
 from typing import List
+import math
 
 import yaml
 import numpy as np
@@ -136,9 +137,9 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         """
         return Grasp6D(
             position=grasp.center,
-            # grasp is alway parallel to the z-axis, assumes that rotation is relative to unit z-axis # TODO: check this
+            # grasp is alway parallel to the z-axis and from the top --> 180° rotation around x
             rotation=Rotation.from_euler(
-                "xyz", (0, 0, grasp.angle), degrees=False
+                "xyz", (-math.pi, 0, grasp.angle), degrees=False
             ).as_matrix(),
             width=grasp.width,
             score=grasp.quality,  # TODO find out scale of score and adjust if necessary
