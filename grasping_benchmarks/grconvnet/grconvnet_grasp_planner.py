@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from PIL import Image
 from scipy.spatial.transform import Rotation
+from matplotlib import pyplot as plt
 
 from grconvnet.utils.load_models import get_model_path
 from grconvnet.inference import GenerativeResnet
@@ -258,5 +259,6 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             camera_position=self._camera_data.cam_pos,
             figsize=(10, 10),
         )
+        plt.close()
 
         return fig
