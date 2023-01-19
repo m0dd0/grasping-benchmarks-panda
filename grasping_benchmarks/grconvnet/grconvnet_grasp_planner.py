@@ -195,6 +195,7 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
             Image.fromarray(depth),
         )
 
+        # TODO load model in init
         model = GenerativeResnet()
         model.load_state_dict(torch.jit.load(self.model_path).state_dict())
         model.to(self.device)
