@@ -31,7 +31,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # setup sources.list and keys for ros packages
-RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
+RUN echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros1-latest.list && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 # install ros packages
@@ -51,7 +51,9 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -y -r && \
     catkin config  --extend /opt/ros/noetic && \
-    catkin build
+    catkin build && \
+    cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
+    pip3 install -e .[grconvnet]
 
 # install grconvnet
 RUN cd /home && \
