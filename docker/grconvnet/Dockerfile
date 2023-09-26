@@ -10,6 +10,7 @@ ARG GRCONVNET_BRANCH=develop
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO noetic
+ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
