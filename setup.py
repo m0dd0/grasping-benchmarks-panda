@@ -22,6 +22,7 @@ setuptools.setup(
     extras_require={
         "dev": ["black", "pylint"],
         "grconvnet": [
+            "grconvnet @ git+https://github.com/m0dd0/robotic-grasping@develop#egg=grconvnet",
             "numpy<1.24",
             "ros_numpy",
             "nptyping",
@@ -29,7 +30,6 @@ setuptools.setup(
             "torch",
             "Pillow",
             "rospkg",
-            "grconvnet @ git+https://github.com/m0dd0/robotic-grasping@develop#egg=grconvnet",
             "scipy",
         ],
     },

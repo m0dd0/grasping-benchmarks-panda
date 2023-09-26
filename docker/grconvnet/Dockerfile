@@ -2,10 +2,10 @@ ARG FROM=ubuntu:focal
 FROM ${FROM}
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
-#ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
-#ARG GRCONVNET_BRANCH=develop
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
 ARG BENCHMARK_BRANCH=docker
+ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
+ARG GRCONVNET_BRANCH=develop
 
 # setup environment (variables)
 ENV LANG C.UTF-8
@@ -39,20 +39,27 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ros-noetic-ros-core=1.5.0-1* \
     python3-catkin-tools && \
-    #python3-rosdep && \
     rm -rf /var/lib/apt/lists/* && \
-    pip install -U python3-rosdep && \
+    pip install -U rosdep && \
     rosdep init
 
-# clone repositories for grasping and build grasping ros package
+# clone and build grasping-benchmarks-panda
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     cd ${CATKIN_WS_DIR}/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
     cd ${CATKIN_WS_DIR} && \
     rosdep update && \
-    rosdep install --from-paths src --ignore-src -y -r
-#catkin config  --extend /opt/ros/noetic && \
-#catkin build
+    rosdep install --from-paths src --ignore-src -y -r && \
+    catkin config  --extend /opt/ros/noetic && \
+    catkin build
+
+# install grconvnet
+RUN cd /home && \
+    git clone -b ${GRCONVNET_BRANCH} ${GRCONVNET_REPO} && \
+    cd GrConvNetBenchmark && \
+    pip3 install -e .
+
+ENV GRASP_BENCHMARK_GRCONVNET true
 
 # setup entrypoint
 COPY ./ros_entrypoint.sh /
