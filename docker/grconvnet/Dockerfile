@@ -5,7 +5,12 @@ ARG CATKIN_WS_DIR=/home/catkin_ws
 #ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
 #ARG GRCONVNET_BRANCH=develop
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
-ARG BENCHMARK_BRANCH=develop
+ARG BENCHMARK_BRANCH=docker
+
+# setup environment (variables)
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV ROS_DISTRO noetic
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -23,41 +28,31 @@ RUN apt-get update && \
     make \
     build-essential \
     python3-pip \
-    #libeigen3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# setup sources.list
-RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list
-
-# setup keys for ros packages
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-
-# setup environment (variables)
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV ROS_DISTRO noetic
+# setup sources.list and keys for ros packages
+RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 # install ros packages
 RUN apt-get update && \ 
     apt-get install -y --no-install-recommends \
     ros-noetic-ros-core=1.5.0-1* \
     python3-catkin-tools && \
-    # ros-noetic-eigen-conversions && \
-    rm -rf /var/lib/apt/lists/*
-#pip install rosdep && \
-#rosdep init && \
-#rosdep update && \
-#rosdep install eigen_conversions
+    #python3-rosdep && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install -U python3-rosdep && \
+    rosdep init
 
 # clone repositories for grasping and build grasping ros package
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     cd ${CATKIN_WS_DIR}/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
     cd ${CATKIN_WS_DIR} && \
-    #rosdep init && \
-    #rosdep update && \
-    catkin config  --extend /opt/ros/noetic && \
-    catkin build
+    rosdep update && \
+    rosdep install --from-paths src --ignore-src -y -r
+#catkin config  --extend /opt/ros/noetic && \
+#catkin build
 
 # setup entrypoint
 COPY ./ros_entrypoint.sh /
