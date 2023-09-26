@@ -11,7 +11,7 @@ find_package(
   message_generation 
   roscpp 
   rospy 
-  tf2_ros 
+#  tf2_ros 
   sensor_msgs 
   std_msgs 
   geometry_msgs 
@@ -58,7 +58,7 @@ catkin_package(
 #  eigen_conversions 
   roscpp 
   rospy 
-  tf2_ros 
+#  tf2_ros 
   sensor_msgs 
   std_msgs 
   geometry_msgs
