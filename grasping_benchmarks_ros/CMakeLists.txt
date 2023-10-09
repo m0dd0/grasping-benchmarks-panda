@@ -4,7 +4,19 @@ project(grasping_benchmarks_ros)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy tf2_ros sensor_msgs std_msgs geometry_msgs pcl_conversions)
+find_package(
+  catkin REQUIRED COMPONENTS 
+  cmake_modules 
+#  eigen_conversions 
+  message_generation 
+  roscpp 
+  rospy 
+#  tf2_ros 
+  sensor_msgs 
+  std_msgs 
+  geometry_msgs 
+#  pcl_conversions
+)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -40,7 +52,16 @@ include_directories(${catkin_INCLUDE_DIRS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS cmake_modules message_runtime eigen_conversions roscpp rospy tf2_ros sensor_msgs std_msgs geometry_msgs
+  CATKIN_DEPENDS 
+  cmake_modules 
+  message_runtime 
+#  eigen_conversions 
+  roscpp 
+  rospy 
+#  tf2_ros 
+  sensor_msgs 
+  std_msgs 
+  geometry_msgs
 )
 
 option(GPD_ROS "Compile gpd ros" OFF)
