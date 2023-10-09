@@ -25,6 +25,8 @@ RUN apt-get update && \
     dirmngr \ 
     gnupg2 \
     git \
+    nano \
+    curl \
     make \
     build-essential \
     python3-pip \
@@ -41,7 +43,10 @@ RUN apt-get update && \
     python3-catkin-tools && \
     rm -rf /var/lib/apt/lists/* && \
     pip install -U rosdep && \
-    rosdep init
+    rosdep init && \
+    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc && \
+    echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> /etc/bash.bashrc && \
+    echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
