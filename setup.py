@@ -22,14 +22,16 @@ setuptools.setup(
     extras_require={
         "dev": ["black", "pylint"],
         "grconvnet": [
-            "numpy<1.24",
-            "rosnumpy",
-            "nptyping",
             "pyyaml",
+            "numpy",
+            "matplotlib",
+            #"numpy<1.24",
+            "rosnumpy",
+            "scipy",
             "torch",
+            "nptyping",
             "Pillow",
             "rospkg",
-            "scipy",
         ],
     },
 )
