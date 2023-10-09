@@ -37,7 +37,8 @@ setuptools.setup(
             "matplotlib",
             "pyyaml",
             "Pillow",
-            "rosnumpy",
+            # "rosnumpy", # the version on PyPI is outdated and does not support new version of numpy, however in the corresponding GitHub repo there is a fix for this
+            "git+https://github.com/manasrda/ros_numpy",
             "scipy",
         ],
     },
