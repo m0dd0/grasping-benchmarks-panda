@@ -144,6 +144,7 @@ RUN apt-get update && \
     autolab-perception==1.0.0 \
     autolab-core \
     visualization \
+    gdown \
     &&\
     rm -rf /var/lib/apt/lists/*
 
@@ -153,8 +154,11 @@ RUN apt-get update && \
 RUN cd ${WS_SOURCES} &&\
     git clone https://github.com/BerkeleyAutomation/gqcnn.git &&\
     cd gqcnn/ &&\
-    chmod +x scripts/downloads/models/download_models.sh &&\
-    ./scripts/downloads/models/download_models.sh &&\
+    gdown "https://drive.google.com/u/0/uc?id=1fbC0sGtVEUmAy7WPT_J-50IuIInMR9oO&export=download" -O /tmp/model_zoo.zip &&\
+    mkdir models &&\
+    unzip -j /tmp/model_zoo.zip model_zoo/FC-GQCNN-4.0-PJ.zip -d /tmp &&\
+    unzip /tmp/FC-GQCNN-4.0-PJ.zip -d models/ &&\
+    rm -rf /tmp/model_zoo.zip /tmp/FC-GQCNN-4.0-PJ.zip &&\
     pip3 install .  &&\
     find ${WS_SOURCES} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
@@ -205,7 +209,7 @@ ENV GRASP_BENCHMARK_DEXNET=true
 
 # Include a custom bashrc
 COPY bashrc /usr/etc/skel/bashrc-dev
-
+COPY GQCNN-4.0-PJ /workspace/sources/gqcnn/models/GQCNN-4.0-PJ
 COPY setup.sh /usr/sbin/setup.sh
 COPY entrypoint.sh /usr/sbin/entrypoint.sh
 RUN chmod 755 /usr/sbin/setup.sh
