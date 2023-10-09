@@ -27,5 +27,4 @@ bin/
 build
 node_modules
 
-__pycache__
-grasping_benchmarks_ros/grconvnet_ros/debug_information/*
+grasping_benchmarks_ros/*/debug_information/*
