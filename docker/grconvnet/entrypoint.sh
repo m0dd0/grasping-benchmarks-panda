@@ -15,8 +15,6 @@ then
     catkin build
     cd $CATKIN_WS_DIR/src/grasping-benchmarks-panda
     pip3 install -e .[grconvnet]
-else
-    echo "### Grasping-benchmarks-panda is up to date ($current_commit)"
 fi
 
 # check for new commits on the grconvnet repo and reinstall the python package if necessary
@@ -29,8 +27,6 @@ if [ "$current_commit" != "$new_commit" ];
 then
     echo "### Reinstalling grconvnet because new commits were pulled ($current_commit -> $new_commit). Consider rebuilding the docker image to avoid this step in the future."
     pip3 install -e .
-else
-    echo "### Grconvnet is up to date ($current_commit)."
 fi
 
 # execute any command entered after the docker run command
