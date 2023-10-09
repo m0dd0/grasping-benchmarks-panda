@@ -8,7 +8,7 @@ git pull
 new_commit=$(git rev-parse HEAD)
 if [ "$current_commit" != "$new_commit" ];
 then
-    echo "rebuilding catkin workspace because new commits were pulled for grasping-benchmarks-panda ($current_commit -> $new_commit)"
+    echo "rebuilding catkin workspace because new commits were pulled for grasping-benchmarks-panda ($current_commit -> $new_commit). Consider rebuilding the docker image to avoid this step in the future."
     cd $CATKIN_WS_DIR
     catkin clean -y
     catkin build
@@ -25,7 +25,7 @@ git pull
 new_commit=$(git rev-parse HEAD)
 if [ "$current_commit" != "$new_commit" ];
 then
-    echo "reinstalling grconvnet because new commits were pulled ($current_commit -> $new_commit)"
+    echo "reinstalling grconvnet because new commits were pulled ($current_commit -> $new_commit). Consider rebuilding the docker image to avoid this step in the future."
     pip3 install -e .
 else
     echo "grconvnet is up to date ($current_commit)"
