@@ -64,7 +64,7 @@ RUN cd /home && \
 ENV GRASP_BENCHMARK_GRCONVNET true
 
 # setup entrypoint
-COPY ./ros_entrypoint.sh /
+COPY ./entrypoint.sh /
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
