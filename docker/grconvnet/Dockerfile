@@ -2,7 +2,7 @@ FROM ubuntu:focal
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
-ARG BENCHMARK_BRANCH=docker
+ARG BENCHMARK_BRANCH=develop
 ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
 ARG GRCONVNET_BRANCH=develop
 
@@ -28,6 +28,7 @@ RUN apt-get update && \
     nano \
     curl \
     make \
+    openssl \
     build-essential \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
