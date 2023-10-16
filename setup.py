@@ -24,9 +24,8 @@ setuptools.setup(
         "grconvnet": [
             "pyyaml",
             "numpy",
+            "ros_numpy @ git+https://github.com/m0dd0/ros_numpy@master",  # the public/original version is outdated and does not support new version of numpy
             "matplotlib",
-            # "numpy<1.24",
-            "rosnumpy",
             "scipy",
             "torch",
             "nptyping",
@@ -37,8 +36,7 @@ setuptools.setup(
             "matplotlib",
             "pyyaml",
             "Pillow",
-            # "rosnumpy", # the version on PyPI is outdated and does not support new version of numpy, however in the corresponding GitHub repo there is a fix for this
-            "ros_numpy @ git+https://github.com/manasrda/ros_numpy@master#egg=ros_numpy",
+            "ros_numpy @ git+https://github.com/m0dd0/ros_numpy@master",  # the public/original version is outdated and does not support new version of numpy
             "scipy",
         ],
     },
