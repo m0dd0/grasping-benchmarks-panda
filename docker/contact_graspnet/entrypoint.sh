@@ -14,10 +14,10 @@ then
     catkin clean -y
     catkin build
     cd $CATKIN_WS_DIR/src/grasping-benchmarks-panda
-    pip3 install -e .[grconvnet]
+    pip3 install -e .[contact_graspnet]
 fi
 
-# check for new commits on the grconvnet repo and reinstall the python package if necessary
+# check for new commits on the contactGraspnet repo and reinstall the python package if necessary
 echo "### Checking for new commits in the ContactGraspnet repo."
 cd /home/ContactGraspnetBenchmark
 current_commit=$(git rev-parse HEAD)

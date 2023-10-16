@@ -2,11 +2,11 @@ FROM ubuntu:focal
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
-ARG BENCHMARK_BRANCH=develop
+ARG BENCHMARK_BRANCH=contact_graspnet
 ARG CONTACT_GRASPNET_REPO=https://github.com/m0dd0/ContactGraspnetBenchmark.git
 ARG CONTACT_GRASPNET_BRANCH=v3
 
-# setup environment (variables)
+# setup environment
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO noetic
@@ -30,15 +30,14 @@ RUN apt-get update && \
     make \
     openssl \
     build-essential \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    python3-pip && \
+    pip3 install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
 
-# setup sources.list and keys for ros packages
+# install ros
 RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-
-# install ros packages
-RUN apt-get update && \ 
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
+    apt-get update && \ 
     apt-get install -y --no-install-recommends \
     ros-noetic-ros-core=1.5.0-1* \
     python3-catkin-tools && \
@@ -59,10 +58,14 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
     cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[grconvnet]
+    pip3 install -e .[contact_graspnet]
 
-# install grconvnet
-RUN cd /home && \
+# install contact_graspnet
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    qt5-default && \
+    rm -rf /var/lib/apt/lists/* && \
+    cd /home && \
     git clone -b ${CONTACT_GRASPNET_BRANCH} ${CONTACT_GRASPNET_REPO} && \
     cd ContactGraspnetBenchmark && \
     pip3 install -e .

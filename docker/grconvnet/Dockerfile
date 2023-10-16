@@ -30,8 +30,8 @@ RUN apt-get update && \
     make \
     openssl \
     build-essential \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
 # setup sources.list and keys for ros packages
 RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
