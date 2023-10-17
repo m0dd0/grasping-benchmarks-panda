@@ -1,4 +1,5 @@
-FROM ubuntu:focal
+ARG PARENT_IMAGE=ubuntu:focal
+FROM ${PARENT_IMAGE}
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 
@@ -8,9 +9,11 @@ ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO noetic
 ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
-# setup timezone
-RUN echo 'Etc/UTC' > /etc/timezone && \
-    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+# setup timezone, depending on the parent image the timezone might already be set
+RUN if [! -e /etc/timezone ]; then \
+    echo 'Etc/UTC' > /etc/timezone; \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime; \
+    fi && \
     apt-get update && \
     apt-get install -q -y --no-install-recommends tzdata && \
     rm -rf /var/lib/apt/lists/*
