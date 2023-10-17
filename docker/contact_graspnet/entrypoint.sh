@@ -29,6 +29,8 @@ then
     pip3 install -e .
 fi
 
+cd /home
+
 # execute any command entered after the docker run command
 echo "execute command $@"
 exec "$@"

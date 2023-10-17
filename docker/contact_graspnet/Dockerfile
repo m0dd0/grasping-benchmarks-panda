@@ -61,12 +61,8 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     pip3 install -e .[contact_graspnet]
 
 # install contact_graspnet
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    qt5-default && \
-    rm -rf /var/lib/apt/lists/* && \
-    cd /home && \
-    git clone -b ${CONTACT_GRASPNET_BRANCH} ${CONTACT_GRASPNET_REPO} && \
+RUN cd /home && \
+    git clone --recursive -b ${CONTACT_GRASPNET_BRANCH} ${CONTACT_GRASPNET_REPO} && \
     cd ContactGraspnetBenchmark && \
     pip3 install -e .
 
@@ -77,3 +73,4 @@ COPY ./entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
+# CMD ["roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]
