@@ -1,10 +1,10 @@
-FROM ubuntu:focal
+FROM tensorflow/tensorflow:2.12.0-gpu
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
 ARG BENCHMARK_BRANCH=contact_graspnet
 ARG CONTACT_GRASPNET_REPO=https://github.com/m0dd0/ContactGraspnetBenchmark.git
-ARG CONTACT_GRASPNET_BRANCH=v3
+ARG CONTACT_GRASPNET_BRANCH=develop
 
 # setup environment
 ENV LANG C.UTF-8
@@ -13,8 +13,10 @@ ENV ROS_DISTRO noetic
 ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
 # setup timezone
-RUN echo 'Etc/UTC' > /etc/timezone && \
-    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+RUN if [! -e /etc/timezone ]; then \
+    echo 'Etc/UTC' > /etc/timezone; \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime; \
+    fi && \
     apt-get update && \
     apt-get install -q -y --no-install-recommends tzdata && \
     rm -rf /var/lib/apt/lists/*
@@ -29,6 +31,7 @@ RUN apt-get update && \
     curl \
     make \
     openssl \
+    wget \
     build-essential \
     python3-pip && \
     pip3 install --upgrade pip && \
@@ -47,6 +50,19 @@ RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc && \
     echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
+
+# install conda and create conda environment
+# this is needed since the tensorflow docker image somehow prevents local pip installs, 
+# however installing into a conda environment works
+ENV PATH="/root/miniconda3/bin:${PATH}"
+ARG PATH="/root/miniconda3/bin:${PATH}"
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \ 
+    mkdir /root/.conda && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b && \ 
+    rm -f Miniconda3-latest-Linux-x86_64.sh && \
+    conda create -n contact_graspnet python=3.10 && \
+    conda init bash
+SHELL ["conda", "run", "-n", "contact_graspnet", "/bin/bash", "-c"]
 
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
