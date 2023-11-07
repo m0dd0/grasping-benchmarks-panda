@@ -1,4 +1,5 @@
-FROM tensorflow/tensorflow:2.12.0-gpu
+ARG PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM ${PARENT_IMAGE}
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
@@ -13,10 +14,8 @@ ENV ROS_DISTRO noetic
 ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
 # setup timezone
-RUN if [! -e /etc/timezone ]; then \
-    echo 'Etc/UTC' > /etc/timezone; \
-    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime; \
-    fi && \
+RUN echo 'Etc/UTC' > /etc/timezone && \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     apt-get update && \
     apt-get install -q -y --no-install-recommends tzdata && \
     rm -rf /var/lib/apt/lists/*
@@ -55,7 +54,6 @@ RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.
     echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
-
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     cd ${CATKIN_WS_DIR}/src && \
@@ -65,18 +63,18 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     rosdep install --from-paths src --ignore-src -y -r && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
-    python -m venv /home/venv && \
     cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    /home/venv/bin/pip3 install catkin_pkg rospkg && \
-    /home/venv/bin/pip3 install -e .[contact_graspnet]
-
+    pip3 install catkin_pkg rospkg && \
+    pip3 install -e .[contact_graspnet]
 
 # install contact_graspnet
 RUN cd /home && \
     git clone --recursive -b ${CONTACT_GRASPNET_BRANCH} ${CONTACT_GRASPNET_REPO} && \
-    /home/venv/bin/pip3 install -e /home/ContactGraspnetBenchmark
+    pip3 install -e /home/ContactGraspnetBenchmark
 
 ENV GRASP_BENCHMARK_CONTACT true
+
+COPY /compile_pointnet_tfops.sh /home/
 
 # setup entrypoint
 COPY ./entrypoint.sh /
