@@ -45,7 +45,6 @@ RUN apt-get update && \
 
 # install conda, adapted from https://github.com/ContinuumIO/docker-images/blob/main/miniconda3/debian/Dockerfile
 ENV PATH /opt/conda/bin:$PATH
-CMD [ "/bin/bash" ]
 ARG CONDA_VERSION=py311_23.10.0-1
 RUN set -x && \
     UNAME_M="$(uname -m)" && \
@@ -75,23 +74,35 @@ RUN set -x && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
     /opt/conda/bin/conda clean -afy
 
-# "install" contact graspnet
+# conda requires login shell
+SHELL ["/bin/bash", "--login", "-c"] 
+RUN conda init bash
+
+# create and activate conda environment with contact_graspnet dependencies
 RUN cd /home && \
     git clone -b ${CONTACT_GRASPNET_BRANCH} ${CONTACT_GRASPNET_REPO} && \
     conda env create -f ./contact_graspnet/contact_graspnet_env.yml
 
-# install grasping-benchmark panda
-RUN git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
-    cd grasping-benchmarks-panda && \
-    pip3 install -e .[contact_graspnet]
+# RUN cd /home/contact_graspnet && \
+#     conda activate contact_graspnet_env && \
+#     bash compile_pointnet_tfops.sh
+
+# copy the models manually as automated download is not reliable
+COPY ./contact_graspnet_models/ /home/contact_graspnet/checkpoints
+COPY ./test_data/ /home/contact_graspnet/test_data
+# download contact graspnet models
+# note: google has very strict rate limits for automated downloads, so this is not a reliable way to download the models ...
+# RUN pip install gdown && \
+#     gdown --folder --speed 2MB https://drive.google.com/drive/folders/1tBHKf60K8DLM5arm-Chyf7jxkzOr5zGl && \
+#     gdown --folder --speed 2MB -O ./contact_graspnet/ https://drive.google.com/drive/folders/1v0_QMTUIEOcu09Int5V6N2Nuq7UCtuAA && \
+#     mv ./contact_graspnet_models/* ./contact_graspnet/checkpoints/ && \
+#     rm -rf ./contact_graspnet_models
+
+# RUN git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
+#     cd grasping-benchmarks-panda && \
+#     pip3 install -e .[contact_graspnet]
 
 # ENV GRASP_BENCHMARK_CONTACT true
 
-# COPY /compile_pointnet_tfops.sh /home/
-
-# # setup entrypoint
-# COPY ./entrypoint.sh /
-
-# ENTRYPOINT ["/entrypoint.sh"]
-# CMD ["bash"]
+CMD ["bash"]
 # CMD ["roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]
