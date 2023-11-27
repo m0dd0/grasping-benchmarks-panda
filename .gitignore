@@ -3,3 +3,6 @@
 .devcontainer/
 *.egg-info/*
 build
+
+docker/contact_graspnet/contact_graspnet_models/
+docker/contact_graspnet/test_data

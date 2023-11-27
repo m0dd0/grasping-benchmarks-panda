@@ -26,6 +26,9 @@ setuptools.setup(
             "Pillow",
             "rospkg",
         ],
-        "contact_graspnet": [],
+        "contact_graspnet": [
+            # there are numerous version conflicts and outdated libraries needed,
+            # so we just use the conda environment from the original repo to install the dependencies
+        ],
     },
 )
