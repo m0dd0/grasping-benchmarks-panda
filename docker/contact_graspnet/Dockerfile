@@ -1,4 +1,5 @@
-FROM ubuntu:focal
+ARG PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM ${PARENT_IMAGE}  
 
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
@@ -60,10 +61,10 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     pip3 install -e .
 
 # install packaged and partly refactored version of contact_graspnet
-RUN git clone https://github.com/m0dd0/ContactGraspnetBenchmark.git /home/ContactGraspnetBenchmark && \
+RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark.git /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .
 
-ENV CONTACT_GRASPNET_BENCHMARK true
+ENV GRASP_BENCHMARK_CONTACT true
 
 CMD ["bash"]
