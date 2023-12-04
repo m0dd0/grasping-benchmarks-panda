@@ -40,9 +40,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     pip install -U rosdep && \
     rosdep init && \
-    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc
-    # echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
-    # echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
+    echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
+    echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p /home/catkin_ws/src
@@ -57,10 +57,10 @@ RUN mkdir -p /home/catkin_ws/src
 # pip3 install -e .
 
 # install packaged and partly refactored version of contact_graspnet
-# RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark.git /home/ContactGraspnetBenchmark && \
-#     cd /home/ContactGraspnetBenchmark && \
-#     pip3 install -e .
+RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark.git /home/ContactGraspnetBenchmark && \
+    cd /home/ContactGraspnetBenchmark && \
+    pip3 install -e .
 
-# ENV GRASP_BENCHMARK_CONTACT true
+ENV GRASP_BENCHMARK_CONTACT true
 
 CMD ["bash"]
