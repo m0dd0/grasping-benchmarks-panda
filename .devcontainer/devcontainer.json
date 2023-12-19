@@ -5,7 +5,8 @@
 	},
 	"runArgs": [
 		"--gpus",
-		"all"
+		"all",
+		// "--privileged"
 	],
 	"customizations": {
 		"vscode": {
@@ -19,10 +20,17 @@
 				"ms-toolsai.jupyter-keymap",
 				"ms-toolsai.jupyter-renderers",
 				"ms-toolsai.vscode-jupyter-slideshow",
+				"Percy.vscode-numpy-viewer"
 			]
 		}
 	},
 	"workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/grasping-benchmark-panda,type=bind",
 	"workspaceFolder": "/home/catkin_ws/src/grasping-benchmark-panda",
-	"postCreateCommand": "./.devcontainer/postCreateCommand.sh"
+	"postCreateCommand": "./.devcontainer/postCreateCommand.sh",
+	// "containerEnv": {
+	// 	"DISPLAY": "unix:0"
+	// },
+	// "mounts": [
+	// 	"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+	// ]
 }

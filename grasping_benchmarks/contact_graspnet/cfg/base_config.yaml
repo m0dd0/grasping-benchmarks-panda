@@ -1,2 +1,6 @@
 checkpoint_dir: scene_test_2048_bs3_hor_sigma_001 # must be locaed in the checkpoints dir in the "original" contact_graspnet repo. See the README.md for more info or use the Docker image.
-forward_passes: 1
+forward_passes: 1 # run multiple parallel forward passes to mesh_utils more potential contact points
+local_regions: False # Crop 3D local regions around given segments
+filter_grasps: False # Filter grasp contacts according to segmap.
+skip_border_objects: False # When extracting local_regions, ignore segments at depth map boundary
+z_range: [0.2,1.8] # Z value threshold to crop the input point cloud
