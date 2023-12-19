@@ -21,6 +21,7 @@ setuptools.setup(
     install_requires=[  # requirements from the base classes
         "numpy",
         "ros_numpy @ git+https://github.com/m0dd0/ros_numpy@master",  # the original version is outdated and does not support new version of numpy
+        "yaml",
     ],
     extras_require={
         "dev": ["black", "pylint"],
