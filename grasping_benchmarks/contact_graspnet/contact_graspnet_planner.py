@@ -5,7 +5,6 @@ from typing import List
 
 import tensorflow.compat.v1 as tf
 import yaml
-import matplotlib as mpl
 
 # The contact graspnet repo is not packaged and uses relative imports, so we need to
 # add it to the path manually.
