@@ -4,3 +4,4 @@ rosdep install --from-paths src --ignore-src -y -r
 catkin config --extend /opt/ros/noetic 
 catkin build 
 pip install -e /home/catkin_ws/src/grasping-benchmark-panda[contact_graspnet]
+source /home/catkin_ws/src/grasping-benchmark-panda/.devcontainer/compile_pointnet_tfops.sh
