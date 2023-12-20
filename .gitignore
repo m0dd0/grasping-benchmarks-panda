@@ -5,5 +5,5 @@ bin/
 *.tmp
 
 grasping_benchmarks_ros/*/debug_information/*
-docker/contact_graspnet/contact_graspnet_models/
-docker/contact_graspnet/test_data/
+docker/contact_graspnet/data/*
+.devcontainer/*/data/*

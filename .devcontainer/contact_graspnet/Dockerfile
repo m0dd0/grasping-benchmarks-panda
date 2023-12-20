@@ -58,10 +58,12 @@ RUN apt-get update && \
     echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
+# cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
+# package and makes it usable as a library form the grasping-benchmarks-panda package
 RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .[contact_graspnet]
-    
+
 ### this is done by the postCreateCommand in the devcontainer.json
 # clone and build grasping-benchmarks-panda
 # RUN mkdir -p /home/catkin_ws/src
@@ -74,6 +76,16 @@ RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home
 # catkin build && \
 # cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
 # pip3 install -e .[contact_graspnet]
+
+### some tools to test the ros grasp serice with data from the simulation
+# we copy the private repos from the host to the container to avoid problems with the ssh key
+# COPY ./data/SF-ObjectDataset/ /home/SF-ObjectDataset/
+# COPY ./data/Benchmark/ /home/Benchmark/
+# RUN cd /home/Benchmark && \
+#     git checkout develop && \
+#     pip3 install -e /home/Benchmark
+# RUN git clone -b develop https://github.com/m0dd0/ALRSimulationTools /home/ALRSimulationTools && \
+#     pip3 install -e /home/ALRSimulationTools[dev]
 
 ENV GRASP_BENCHMARK_CONTACT true
 
