@@ -1,0 +1,29 @@
+{
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {}
+	},
+	"runArgs": [
+		"--gpus",
+		"all"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"GitHub.copilot",
+				"mhutchie.git-graph",
+				"ms-python.black-formatter",
+				"GitHub.copilot-chat",
+				"ms-toolsai.jupyter",
+				"ms-toolsai.vscode-jupyter-cell-tags",
+				"ms-toolsai.jupyter-keymap",
+				"ms-toolsai.jupyter-renderers",
+				"ms-toolsai.vscode-jupyter-slideshow",
+				"Percy.vscode-numpy-viewer"
+			]
+		}
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/grasping-benchmark-panda,type=bind",
+	"workspaceFolder": "/home/catkin_ws/src/grasping-benchmark-panda",
+	"postCreateCommand": "./.devcontainer/grconvnet/postCreateCommand.sh",
+}
