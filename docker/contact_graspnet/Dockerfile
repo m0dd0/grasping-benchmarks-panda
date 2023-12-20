@@ -67,7 +67,7 @@ RUN apt-get update && \
 RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .
-    
+
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p /home/catkin_ws/src && \
     cd ${CATKIN_WS_DIR}/src && \
@@ -82,4 +82,6 @@ RUN mkdir -p /home/catkin_ws/src && \
 
 ENV GRASP_BENCHMARK_CONTACT true
 
+COPY ./entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
