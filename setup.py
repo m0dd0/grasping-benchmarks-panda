@@ -18,20 +18,27 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={"grasping_benchmarks": config_files},
     python_requires=">=3",
-    install_requires=["numpy", "nptyping"],  # requirements from the base classes
+    install_requires=[
+        "numpy",
+        "ros_numpy @ git+https://github.com/m0dd0/ros_numpy@master",  # the original version is outdated and does not support new version of numpy
+        "nptyping",
+    ],
     extras_require={
         "dev": ["black", "pylint"],
         "grconvnet": [
             "pyyaml",
             "numpy",
             "matplotlib",
-            #"numpy<1.24",
+            # "numpy<1.24",
             "rosnumpy",
             "scipy",
             "torch",
             "nptyping",
             "Pillow",
             "rospkg",
+        ],
+        "contact_graspnet": [
+            # "contact_graspnet @ git+https://github.com/m0dd0/ContactGraspnetBenchmark@develop",
         ],
     },
 )
