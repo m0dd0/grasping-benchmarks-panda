@@ -5,7 +5,9 @@
 	},
 	"runArgs": [
 		"--gpus",
-		"all"
+		"all",
+		"--net",
+		"host"
 	],
 	"customizations": {
 		"vscode": {
