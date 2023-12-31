@@ -78,7 +78,7 @@ RUN mkdir -p /home/catkin_ws/src && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
     cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[contact_graspnet]
+    pip3 install -e .[contactgraspnet]
 
 ENV GRASP_BENCHMARK_CONTACT true
 

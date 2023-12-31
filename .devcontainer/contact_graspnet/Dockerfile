@@ -62,7 +62,7 @@ RUN apt-get update && \
 # package and makes it usable as a library form the grasping-benchmarks-panda package
 RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
-    pip3 install -e .[contact_graspnet]
+    pip3 install -e .[contactgraspnet]
 
 ### this is done by the postCreateCommand in the devcontainer.json
 # clone and build grasping-benchmarks-panda
@@ -75,17 +75,7 @@ RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home
 # catkin config  --extend /opt/ros/noetic && \
 # catkin build && \
 # cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-# pip3 install -e .[contact_graspnet]
-
-### some tools to test the ros grasp serice with data from the simulation
-# we copy the private repos from the host to the container to avoid problems with the ssh key
-# COPY ./data/SF-ObjectDataset/ /home/SF-ObjectDataset/
-# COPY ./data/Benchmark/ /home/Benchmark/
-# RUN cd /home/Benchmark && \
-#     git checkout develop && \
-#     pip3 install -e /home/Benchmark
-# RUN git clone -b develop https://github.com/m0dd0/ALRSimulationTools /home/ALRSimulationTools && \
-#     pip3 install -e /home/ALRSimulationTools[dev]
+# pip3 install -e .[contactgraspnet]
 
 ENV GRASP_BENCHMARK_CONTACT true
 

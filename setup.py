@@ -37,7 +37,7 @@ setuptools.setup(
             "Pillow",
             "rospkg",
         ],
-        "contact_graspnet": [
+        "contactgraspnet": [
             # "contact_graspnet @ git+https://github.com/m0dd0/ContactGraspnetBenchmark@develop",
         ],
     },
