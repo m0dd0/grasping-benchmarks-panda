@@ -82,6 +82,4 @@ RUN mkdir -p /home/catkin_ws/src && \
 
 ENV GRASP_BENCHMARK_CONTACT true
 
-COPY ./entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["bash"]
+CMD ["bash", "-c", "source /home/catkin_ws/devel/setup.bash && roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]
