@@ -1,30 +1,9 @@
-# ignore dot files/directories
-.*
-!.gitignore
-
-*.autosave
 *.pyc
-*.user
-*~
-.vscode/*
 .vscode/
 *.egg-info/*
-
-Thumbs.db
-tags
 bin/
-*.sdf
-*.opensdf
-*.obj
-*.stamp
-*.depend
-*.rule
 *.tmp
-*/debug
-*.suo
-*.log
-*.tlog
-build
-node_modules
 
 grasping_benchmarks_ros/*/debug_information/*
+docker/contact_graspnet/data/*
+.devcontainer/*/data/*

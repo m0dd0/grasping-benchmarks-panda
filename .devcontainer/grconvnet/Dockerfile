@@ -1,10 +1,5 @@
-FROM ubuntu:focal
-
-ARG CATKIN_WS_DIR=/home/catkin_ws
-ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
-ARG BENCHMARK_BRANCH=develop
-ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
-ARG GRCONVNET_BRANCH=develop
+ARG PARENT_IMAGE=ubuntu:2004
+FROM ${PARENT_IMAGE}  
 
 # setup environment (variables)
 ENV LANG C.UTF-8
@@ -29,9 +24,23 @@ RUN apt-get update && \
     curl \
     make \
     openssl \
+    wget \
     build-essential \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    freeglut3-dev \
     python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    bzip2 \
+    libglib2.0-0 \
+    libxrender1 \
+    mercurial \
+    openssh-client \
+    procps && \ 
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip3 install --upgrade pip
 
 # setup sources.list and keys for ros packages
 RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
@@ -46,31 +55,7 @@ RUN apt-get update && \
     pip install -U rosdep && \
     rosdep init && \
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc && \
-    echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> /etc/bash.bashrc && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
-# clone and build grasping-benchmarks-panda
-RUN mkdir -p ${CATKIN_WS_DIR}/src && \
-    cd ${CATKIN_WS_DIR}/src && \
-    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
-    cd ${CATKIN_WS_DIR} && \
-    rosdep update && \
-    rosdep install --from-paths src --ignore-src -y -r && \
-    catkin config  --extend /opt/ros/noetic && \
-    catkin build && \
-    cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[grconvnet]
-
-# install grconvnet
-RUN cd /home && \
-    git clone -b ${GRCONVNET_BRANCH} ${GRCONVNET_REPO} && \
-    cd GrConvNetBenchmark && \
-    pip3 install -e .
-
-ENV GRASP_BENCHMARK_GRCONVNET true
-
-# setup entrypoint
-COPY ./entrypoint.sh /
-
-ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
