@@ -28,7 +28,7 @@ setuptools.setup(
         "grconvnet": [
             "pyyaml",
             "numpy",
-            "matplotlib>=3.5.0",
+            "matplotlib",
             # "numpy<1.24",
             "rosnumpy",
             "scipy",
