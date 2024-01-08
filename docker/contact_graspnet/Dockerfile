@@ -53,7 +53,7 @@ RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.
 # install ros packages
 RUN apt-get update && \ 
     apt-get install -y --no-install-recommends \
-    ros-noetic-desktop-full \
+    ros-noetic-desktop \
     python3-catkin-tools && \
     rm -rf /var/lib/apt/lists/* && \
     pip install -U rosdep && \
