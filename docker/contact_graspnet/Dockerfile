@@ -53,7 +53,7 @@ RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.
 # install ros packages
 RUN apt-get update && \ 
     apt-get install -y --no-install-recommends \
-    ros-noetic-ros-core=1.5.0-1* \
+    ros-noetic-desktop-full \
     python3-catkin-tools && \
     rm -rf /var/lib/apt/lists/* && \
     pip install -U rosdep && \
@@ -64,14 +64,14 @@ RUN apt-get update && \
 
 # cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
 # package and makes it usable as a library form the grasping-benchmarks-panda package
-RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
+RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && echo "1" && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .
 
 # clone and build grasping-benchmarks-panda
 RUN mkdir -p /home/catkin_ws/src && \
     cd ${CATKIN_WS_DIR}/src && \
-    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
+    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && echo "1" && \
     cd ${CATKIN_WS_DIR} && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -y -r && \
