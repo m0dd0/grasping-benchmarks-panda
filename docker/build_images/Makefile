@@ -33,6 +33,6 @@ superquadrics:
 
 contactgraspnet:
 	docker build --rm \
-		--build-arg from=tensorflow/tensorflow:2.2.3-gpu-py3 \
+		--build-arg from=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 \
 		--tag $(USER_NAME)/benchmark_contactgraspnet:latest \
 		../contact_graspnet/
