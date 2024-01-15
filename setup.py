@@ -40,5 +40,8 @@ setuptools.setup(
         "contactgraspnet": [
             # "contact_graspnet @ git+https://github.com/m0dd0/ContactGraspnetBenchmark@develop",
         ],
+        "se3dif": [
+            "se3dif @ git+https://github.com/TheCamusean/grasp_diffusion@master",
+        ],
     },
 )
