@@ -3,10 +3,13 @@
 
 from pathlib import Path
 from typing import List
+import copy
 
 import yaml
 
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
+
+from se3dif.models.loader import load_model
 
 
 class SE3DifGraspPlanner(BaseGraspPlanner):
@@ -44,6 +47,11 @@ class SE3DifGraspPlanner(BaseGraspPlanner):
         """
 
         self._camera_data = camera_data
+
+        pointcloud = copy.deepcopy(camera_data.pointcloud)
+        pointcloud *= 8.0
+
+        model = load_model({"device": DEVICE, "pretrained_model": MODEL})
 
         return self._grasp_poses
 
