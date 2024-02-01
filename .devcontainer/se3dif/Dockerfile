@@ -73,9 +73,9 @@ RUN python3 -m pip install \
     pytorch3d
 
 # installation of the package itself
-RUN python3 -m pip install --no-deps git+https://github.com/TheCamusean/grasp_diffusion@master
-
-# copy data for the grasp_diffusion package into the docker container
-# COPY ./data /home/data
+# we need to provide the -e flag because otherwise some submodukes are not installed
+# therfore we first need to clone tge repository into the docker container
+RUN git clone -b master https://github.com/TheCamusean/grasp_diffusion /home/grasp_diffusion && \
+    python3 -m pip install -e /home/grasp_diffusion 
 
 CMD ["/bin/bash"]
