@@ -41,7 +41,8 @@ setuptools.setup(
             # "contact_graspnet @ git+https://github.com/m0dd0/ContactGraspnetBenchmark@develop",
         ],
         "se3dif": [
-            "se3dif @ git+https://github.com/TheCamusean/grasp_diffusion@master",
+            # grasp_diffusion package gets installed in Dockerfile as we need to install dependencies of grasp_diffusion package manually to avoid conflicts
+            # "se3dif @ git+https://github.com/TheCamusean/grasp_diffusion@master",
         ],
     },
 )
