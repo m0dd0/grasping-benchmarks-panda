@@ -1,7 +1,9 @@
 {
 	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {}
+		"dockerfile": "../../docker/contact_graspnet/Dockerfile",
+		"args": {
+			"IS_DEVCONTAINER_BUILD": "false"
+		}
 	},
 	"runArgs": [
 		"--gpus",
