@@ -1,6 +1,7 @@
 ARG PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 FROM ${PARENT_IMAGE}  
 
+ARG IS_DEVCONTAINER_BUILD=false
 ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
 ARG BENCHMARK_BRANCH=develop
@@ -19,6 +20,7 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # install basic packages
+# TODO clean up unnecessary packages
 RUN apt-get update && \ 
     apt-get install -q -y --no-install-recommends \
     dirmngr \ 
@@ -64,21 +66,24 @@ RUN apt-get update && \
 
 # cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
 # package and makes it usable as a library form the grasping-benchmarks-panda package
-RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && echo "1" && \
+RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .
 
 # clone and build grasping-benchmarks-panda
-RUN mkdir -p /home/catkin_ws/src && \
+# this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
+RUN if [[ "${IS_DEVCONTAINER_BUILD}" = "false" ]]; then \
+    mkdir -p /home/catkin_ws/src && \
     cd ${CATKIN_WS_DIR}/src && \
-    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && echo "1" && \
+    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
     cd ${CATKIN_WS_DIR} && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -y -r && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
     cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[contactgraspnet]
+    pip3 install -e .[contactgraspnet]; \
+    fi
 
 ENV GRASP_BENCHMARK_CONTACT true
 
