@@ -1,6 +1,9 @@
 {
     "build": {
-        "dockerfile": "Dockerfile",
+        "dockerfile": "../../docker/se3dif/Dockerfile",
+        "args": {
+            "IS_DEVCONTAINER_BUILD": "true",
+        }
     },
     "runArgs": [
         "--gpus",
