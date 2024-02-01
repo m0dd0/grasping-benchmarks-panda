@@ -78,6 +78,12 @@ RUN python3 -m pip install \
     natsort==8.2.0 \
     pytorch3d
 
+# installation of the package itself
+# we need to provide the -e flag because otherwise some submodukes are not installed
+# therfore we first need to clone tge repository into the docker container
+RUN git clone -b master https://github.com/TheCamusean/grasp_diffusion /home/grasp_diffusion && \
+    python3 -m pip install --no-deps -e /home/grasp_diffusion 
+
 # clone and build grasping-benchmarks-panda
 # this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
 RUN if [[ "${IS_DEVCONTAINER_BUILD}" = "false" ]]; then \
