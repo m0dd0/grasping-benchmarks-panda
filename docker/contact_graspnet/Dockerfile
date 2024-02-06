@@ -66,13 +66,14 @@ RUN apt-get update && \
 
 # cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
 # package and makes it usable as a library form the grasping-benchmarks-panda package
+# TODO check if this can be also installed in the setup.py of grasping-benchmarks-panda
 RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
     cd /home/ContactGraspnetBenchmark && \
     pip3 install -e .
 
 # clone and build grasping-benchmarks-panda
 # this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
-RUN if [[ "${IS_DEVCONTAINER_BUILD}" = "false" ]]; then \
+RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
     mkdir -p /home/catkin_ws/src && \
     cd ${CATKIN_WS_DIR}/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
