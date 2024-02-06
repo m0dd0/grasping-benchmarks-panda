@@ -12,9 +12,9 @@ from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
 from se3dif.models.loader import load_model
 
 
-class SE3DifGraspPlanner(BaseGraspPlanner):
+class Se3DifGraspPlanner(BaseGraspPlanner):
     @classmethod
-    def from_config_file(cls, config_file: Path) -> "SE3DifGraspPlanner":
+    def from_config_file(cls, config_file: Path) -> "Se3DifGraspPlanner":
         """Creates a new instance of the GRConvNetGraspPlanner from a config file.
 
         Args:
@@ -33,7 +33,7 @@ class SE3DifGraspPlanner(BaseGraspPlanner):
         self,
         cfg: dict,
     ):
-        super(SE3DifGraspPlanner, self).__init__(cfg)
+        super(Se3DifGraspPlanner, self).__init__(cfg)
 
     def plan_grasp(
         self, camera_data: CameraData, n_candidates: int = 1
