@@ -1,5 +1,5 @@
-ARG PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
-FROM ${PARENT_IMAGE}  
+ARG PARENT_IMAGE=nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
+FROM ${PARENT_IMAGE}
 
 ARG IS_DEVCONTAINER_BUILD=false
 ARG CATKIN_WS_DIR=/home/catkin_ws
@@ -20,7 +20,6 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # install basic packages
-# TODO clean up unnecessary packages
 RUN apt-get update && \ 
     apt-get install -q -y --no-install-recommends \
     dirmngr \ 
@@ -29,24 +28,11 @@ RUN apt-get update && \
     nano \
     curl \
     make \
-    openssl \
-    wget \
-    build-essential \
-    ffmpeg \
-    libsm6 \
-    libxext6 \
-    freeglut3-dev \
     python3-pip \
-    ca-certificates \
-    bzip2 \
-    libglib2.0-0 \
-    libxrender1 \
-    mercurial \
-    openssh-client \
-    procps && \ 
+    python3-dev \
+    software-properties-common && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip
+    rm -rf /var/lib/apt/lists/*
 
 # setup sources.list and keys for ros packages
 RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
@@ -64,12 +50,39 @@ RUN apt-get update && \
     echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
-# cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
-# package and makes it usable as a library form the grasping-benchmarks-panda package
-# TODO check if this can be also installed in the setup.py of grasping-benchmarks-panda
-RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
-    cd /home/ContactGraspnetBenchmark && \
-    pip3 install -e .
+# install additional dependencies for se3dif package
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libsuitesparse-dev \
+    build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* 
+
+RUN python3 -m pip install --upgrade pip
+
+# here we install all the dependecies defined in the requirements.txt file of thr grasp_diffusion package
+# we keep all version except for the theseus-ai package, which was originally set to 0.1.3 but caused many hard to solve issues when trying to install it into the docker container
+# to avaoid that the problematic version of theseus-ai is tried to be installed when installing the grasp_diffusion package one must add the --no-deps flag to the pip install command
+RUN python3 -m pip install \
+    numpy==1.21.6 \
+    theseus-ai==0.2.1 \
+    tqdm==4.64.1 \
+    configargparse==1.5.3 \
+    h5py==3.7.0 \
+    pyglet==1.5.27 \
+    scikit-learn==1.0.2 \
+    trimesh==3.14 \
+    matplotlib==3.5.3 \
+    torchvision==0.14.1 \
+    tensorboard==2.10.0 \
+    natsort==8.2.0 \
+    pytorch3d
+
+# installation of the package itself
+# we need to provide the -e flag because otherwise some submodukes are not installed
+# therfore we first need to clone the repository into the docker container and can not use pip install directly or the setup.py file
+RUN git clone -b master https://github.com/TheCamusean/grasp_diffusion /home/grasp_diffusion && \
+    python3 -m pip install --no-deps -e /home/grasp_diffusion 
 
 # clone and build grasping-benchmarks-panda
 # this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
@@ -86,6 +99,6 @@ RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
     pip3 install -e .[contactgraspnet]; \
     fi
 
-ENV GRASP_BENCHMARK_CONTACT true
+ENV GRASP_BENCHMARK_SE3DIF true
 
 CMD ["bash", "-c", "source /home/catkin_ws/devel/setup.bash && roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]

@@ -1,5 +1,5 @@
-ARG PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
-FROM ${PARENT_IMAGE}  
+ARG PARENT_IMAGE=ubuntu:focal
+FROM ${PARENT_IMAGE}
 
 ARG IS_DEVCONTAINER_BUILD=false
 ARG CATKIN_WS_DIR=/home/catkin_ws
@@ -20,7 +20,6 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     rm -rf /var/lib/apt/lists/*
 
 # install basic packages
-# TODO clean up unnecessary packages
 RUN apt-get update && \ 
     apt-get install -q -y --no-install-recommends \
     dirmngr \ 
@@ -29,24 +28,11 @@ RUN apt-get update && \
     nano \
     curl \
     make \
-    openssl \
-    wget \
-    build-essential \
-    ffmpeg \
-    libsm6 \
-    libxext6 \
-    freeglut3-dev \
     python3-pip \
-    ca-certificates \
-    bzip2 \
-    libglib2.0-0 \
-    libxrender1 \
-    mercurial \
-    openssh-client \
-    procps && \ 
+    python3-dev \
+    software-properties-common && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip
+    rm -rf /var/lib/apt/lists/*
 
 # setup sources.list and keys for ros packages
 RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros1-latest.list && \
@@ -64,16 +50,13 @@ RUN apt-get update && \
     echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
-# cloning and installing the ContactGraspnetBenchmark package which wraps the contact_graspnet 
-# package and makes it usable as a library form the grasping-benchmarks-panda package
-# TODO check if this can be also installed in the setup.py of grasping-benchmarks-panda
-RUN git clone -b develop https://github.com/m0dd0/ContactGraspnetBenchmark /home/ContactGraspnetBenchmark && \
-    cd /home/ContactGraspnetBenchmark && \
-    pip3 install -e .
+### HERE YOU NEED TO PUT THE INSTALLATION OF THE ADDITIONAL DEPENDENCIES FOR THE SPECIFIC GRASPING ALGORITHM
+# install additional dependencies for <...> package
+###
 
 # clone and build grasping-benchmarks-panda
 # this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
-RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
+RUN if [[ "${IS_DEVCONTAINER_BUILD}" = "false" ]]; then \
     mkdir -p /home/catkin_ws/src && \
     cd ${CATKIN_WS_DIR}/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
@@ -83,9 +66,9 @@ RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
     cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[contactgraspnet]; \
+    pip3 install -e .; \
     fi
 
-ENV GRASP_BENCHMARK_CONTACT true
+ENV GRASP_BENCHMARK_<...> true
 
 CMD ["bash", "-c", "source /home/catkin_ws/devel/setup.bash && roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]
