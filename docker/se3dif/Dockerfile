@@ -2,7 +2,6 @@ ARG PARENT_IMAGE=nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 FROM ${PARENT_IMAGE}
 
 ARG IS_DEVCONTAINER_BUILD=false
-ARG CATKIN_WS_DIR=/home/catkin_ws
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
 ARG BENCHMARK_BRANCH=develop
 
@@ -10,7 +9,6 @@ ARG BENCHMARK_BRANCH=develop
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO noetic
-ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -88,14 +86,14 @@ RUN git clone -b master https://github.com/TheCamusean/grasp_diffusion /home/gra
 # this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
 RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
     mkdir -p /home/catkin_ws/src && \
-    cd ${CATKIN_WS_DIR}/src && \
+    cd /home/catkin_ws/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
-    cd ${CATKIN_WS_DIR} && \
+    cd /home/catkin_ws && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -y -r && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
-    cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
+    cd /home/catkin_ws/src/grasping-benchmarks-panda && \
     pip3 install -e .[contactgraspnet]; \
     fi
 
