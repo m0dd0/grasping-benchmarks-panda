@@ -1,7 +1,9 @@
 {
 	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {}
+		"dockerfile": "../../docker/contact_graspnet/Dockerfile",
+		"args": {
+			"IS_DEVCONTAINER_BUILD": "false"
+		}
 	},
 	"runArgs": [
 		"--gpus",
@@ -27,5 +29,5 @@
 	},
 	"workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/grasping-benchmark-panda,type=bind",
 	"workspaceFolder": "/home/catkin_ws/src/grasping-benchmark-panda",
-	"postCreateCommand": "./.devcontainer/contact_graspnet/postCreateCommand.sh",
+	"postCreateCommand": "bash ./.devcontainer/contact_graspnet/postCreateCommand.sh",
 }

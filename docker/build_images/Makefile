@@ -30,9 +30,18 @@ superquadrics:
 		--tag $(USER_NAME)/benchmark_6dgraspnet:latest \
 		../6dgraspnet/
 
+grconvnet:
+	docker build --rm \
+		--build-arg PARENT_IMAGE=ubuntu:focal \
+		--build-arg BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git \
+		--build-arg BENCHMARK_BRANCH=develop \
+		--tag $(USER_NAME)/benchmark_grconvnet:latest \
+		../grconvnet/
 
 contactgraspnet:
 	docker build --rm \
-		--build-arg from=tensorflow/tensorflow:2.2.3-gpu-py3 \
+		--build-arg PARENT_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 \
+		--build-arg BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git \
+		--build-arg BENCHMARK_BRANCH=develop \
 		--tag $(USER_NAME)/benchmark_contactgraspnet:latest \
 		../contact_graspnet/
