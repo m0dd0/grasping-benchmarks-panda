@@ -45,3 +45,12 @@ contactgraspnet:
 		--build-arg BENCHMARK_BRANCH=develop \
 		--tag $(USER_NAME)/benchmark_contactgraspnet:latest \
 		../contact_graspnet/
+
+
+se3dif:
+	docker build --rm \
+		--build-arg PARENT_IMAGE=nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04 \
+		--build-arg BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git \
+		--build-arg BENCHMARK_BRANCH=develop \
+		--tag $(USER_NAME)/benchmark_se3dif:latest \
+		../se3dif/
