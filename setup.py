@@ -36,6 +36,7 @@ setuptools.setup(
             "nptyping",
             "Pillow",
             "rospkg",
+            # TODO check if https://github.com/m0dd0/GrConvNetBenchmark.git can be installed from here
         ],
         "contactgraspnet": [
             # TODO check if this can be successfully installed from the setup.py instead of the Dockerfile
