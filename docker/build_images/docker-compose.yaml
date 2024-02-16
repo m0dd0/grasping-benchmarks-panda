@@ -1,0 +1,39 @@
+version: "3.0"
+
+services:
+
+    grconvnet:
+      build:
+        context: ../grconvnet
+        dockerfile: Dockerfile
+        args:
+          PARENT_IMAGE: ubuntu:focal
+          BENCHMARK_REPO: https://github.com/m0dd0/grasping-benchmarks-panda.git
+          BENCHMARK_BRANCH: develop
+      image: grconvnet
+      network_mode: host
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                capabilities: [gpu]
+                count: all
+
+    contact_graspnet:
+      build:
+        context: ../contact_graspnet
+        dockerfile: Dockerfile
+        args:
+          PARENT_IMAGE: ubuntu:focal
+          BENCHMARK_REPO: https://github.com/m0dd0/grasping-benchmarks-panda.git
+          BENCHMARK_BRANCH: develop
+      image: contact_graspnet
+      network_mode: host
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                capabilities: [gpu]
+                count: all

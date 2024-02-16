@@ -1,16 +1,14 @@
-FROM ubuntu:focal
+ARG PARENT_IMAGE=ubuntu:focal
+FROM ${PARENT_IMAGE}
 
-ARG CATKIN_WS_DIR=/home/catkin_ws
+ARG IS_DEVCONTAINER_BUILD=false
 ARG BENCHMARK_REPO=https://github.com/m0dd0/grasping-benchmarks-panda.git
 ARG BENCHMARK_BRANCH=develop
-ARG GRCONVNET_REPO=https://github.com/m0dd0/GrConvNetBenchmark.git
-ARG GRCONVNET_BRANCH=develop
 
 # setup environment (variables)
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO noetic
-ENV CATKIN_WS_DIR ${CATKIN_WS_DIR}
 
 # setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -46,31 +44,31 @@ RUN apt-get update && \
     pip install -U rosdep && \
     rosdep init && \
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc && \
-    echo "source ${CATKIN_WS_DIR}/devel/setup.bash" >> /etc/bash.bashrc && \
+    echo "source /home/catkin_ws/devel/setup.bash" >> /etc/bash.bashrc && \
     echo "echo 'ROS environment initialized'" >> /etc/bash.bashrc
 
+# install grconvnet
+# TODO check if this can be integrated in the setup.py of grasping-benchmarks-panda
+RUN cd /home && \
+    git clone -b develop https://github.com/m0dd0/GrConvNetBenchmark.git && \
+    cd GrConvNetBenchmark && \
+    pip3 install -e .
+
 # clone and build grasping-benchmarks-panda
-RUN mkdir -p ${CATKIN_WS_DIR}/src && \
-    cd ${CATKIN_WS_DIR}/src && \
+# this is not executed when building the devcontainer as the workspace is mounted from the host and installed in postCreateCommand
+RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
+    mkdir -p /home/catkin_ws/src && \
+    cd /home/catkin_ws/src && \
     git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} && \
-    cd ${CATKIN_WS_DIR} && \
+    cd /home/catkin_ws && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -y -r && \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
-    cd ${CATKIN_WS_DIR}/src/grasping-benchmarks-panda && \
-    pip3 install -e .[grconvnet]
-
-# install grconvnet
-RUN cd /home && \
-    git clone -b ${GRCONVNET_BRANCH} ${GRCONVNET_REPO} && \
-    cd GrConvNetBenchmark && \
-    pip3 install -e .
+    cd /home/catkin_ws/src/grasping-benchmarks-panda && \
+    pip3 install -e .[grconvnet]; \
+    fi
 
 ENV GRASP_BENCHMARK_GRCONVNET true
 
-# setup entrypoint
-COPY ./entrypoint.sh /
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["bash"]
+CMD ["bash", "-c", "source /home/catkin_ws/devel/setup.bash && roslaunch grasping_benchmarks_ros grasp_planning_benchmark.launch"]
