@@ -3,34 +3,36 @@
 ARG from=ubuntu:bionic
 FROM ${from}
 
+ARG BENCHMARK_REPO=https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git
+ARG BENCHMARK_BRANCH=master
+
 # Change default shell to bash
 SHELL ["/bin/bash", "-c"]
 
 # Install packages
-# ================
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends \
-        sudo \
-        gosu \
-        software-properties-common \
-        git \
-        wget \
-        curl \
-        nano \
-        unzip \
-        libgl1-mesa-glx \
-        libgl1-mesa-dri \
-        apt-transport-https \
-        apt-utils \
-        dbus-x11 \
-        bash-completion \
-        gdb \
-        ssh \
-        iputils-ping \
-        gnupg \
-        gnupg2 \
-        xvfb \
-        &&\
+    sudo \
+    gosu \
+    software-properties-common \
+    git \
+    wget \
+    curl \
+    nano \
+    unzip \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    apt-transport-https \
+    apt-utils \
+    dbus-x11 \
+    bash-completion \
+    gdb \
+    ssh \
+    iputils-ping \
+    gnupg \
+    gnupg2 \
+    xvfb \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
@@ -38,12 +40,12 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     add-apt-repository ppa:ubuntu-toolchain-r/test &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        gcc-8 \
-        g++-8 \
-        cmake \
-        cmake-curses-gui \
-        build-essential \
-        &&\
+    gcc-8 \
+    g++-8 \
+    cmake \
+    cmake-curses-gui \
+    build-essential \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 # Setup locales and timezone
@@ -59,63 +61,59 @@ RUN apt-get update &&\
     dpkg-reconfigure --frontend noninteractive tzdata
 
 # Install python3
-# ===============
 ENV PYTHON_VERSION=3.6
 RUN add-apt-repository ppa:deadsnakes/ppa &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-dev \
-        libpython${PYTHON_VERSION}-dev \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
-        python3-pygments \
-        python3-numpy \
-        &&\
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    libpython${PYTHON_VERSION}-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    python3-pygments \
+    python3-numpy \
+    &&\
     rm -rf /var/lib/apt/lists/*
 RUN python3 -m pip install --upgrade pip
 
 # Install ROS Desktop Full
-# ========================
-
 # https://github.com/osrf/docker_images/blob/master/ros/
 ENV ROS_DISTRO=noetic
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com \
-                --recv-keys F42ED6FBAB17C654 &&\
+    --recv-keys F42ED6FBAB17C654 &&\
     echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" \
-        > /etc/apt/sources.list.d/ros-latest.list &&\
+    > /etc/apt/sources.list.d/ros-latest.list &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        ros-${ROS_DISTRO}-ros-base \
-        ros-${ROS_DISTRO}-perception \
-        ros-${ROS_DISTRO}-geometry2 \
-        ros-${ROS_DISTRO}-vision-opencv \
-	ros-${ROS_DISTRO}-jsk-tools \
-        python3-rosdep \
-        python3-rosinstall \
-        python3-rosinstall-generator \
-        python3-vcstools \
-        python3-wstool \
-        python3-catkin-tools \
-        python3-catkin-pkg-modules \
-        python3-rospkg-modules \
-        python3-empy \
-        libgtk-3-dev \
-        &&\
+    ros-${ROS_DISTRO}-ros-base \
+    ros-${ROS_DISTRO}-perception \
+    ros-${ROS_DISTRO}-geometry2 \
+    ros-${ROS_DISTRO}-vision-opencv \
+    ros-${ROS_DISTRO}-jsk-tools \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-vcstools \
+    python3-wstool \
+    python3-catkin-tools \
+    python3-catkin-pkg-modules \
+    python3-rospkg-modules \
+    python3-empy \
+    libgtk-3-dev \
+    &&\
     rm -rf /var/lib/apt/lists/* &&\
     rosdep init &&\
     rosdep update &&\
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com \
-                --recv-keys 6AF7F09730B3F0A4 &&\
-                apt-get update &&\
-                apt-get install ros-${ROS_DISTRO}-ros-numpy
+    --recv-keys 6AF7F09730B3F0A4 &&\
+    apt-get update &&\
+    apt-get install ros-${ROS_DISTRO}-ros-numpy
 
 # Set workspace directories
-# =========================
 ENV WS_DIR=/workspace
 ENV CATKIN_WS_DIR=${WS_DIR}/catkin_ws
 ENV WS_INSTALL=${WS_DIR}/install
@@ -126,7 +124,6 @@ ARG WS_BIN=${WS_SOURCES}/bin
 RUN groupadd -K GID_MIN=900 -K GID_MAX=1100 runtimeusers
 
 # Create catkin_ws with dependencies/ros packages for python3
-# ===========================================================
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     cd ${CATKIN_WS_DIR} &&\
     rosdep update && rosdep install --from-paths src --ignore-src -y -r &&\
@@ -137,12 +134,8 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install 6DoFGraspNet and related dependencies
-# =============================================
-
-# RUN pip3 install vtk==8.1.0
-
 RUN mkdir -p ${WS_SOURCES} &&\
-     cd ${WS_SOURCES}
+    cd ${WS_SOURCES}
 
 RUN cd ${WS_SOURCES} &&\
     git clone https://github.com/nicolas-schreiber/6dof-graspnet.git &&\
@@ -161,15 +154,11 @@ RUN cd ${WS_SOURCES} &&\
     python-fcl &&\
     tar -xvzf checkpoints.tar.gz
 
-###################################
-
 ENV GRASPNET_DIR=${WS_SOURCES}/6dof-graspnet
 
 # # Install benchmark-grasping
-# # ==========================
-
 RUN cd ${CATKIN_WS_DIR}/src &&\
-    git clone https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git &&\
+    git clone -b ${BENCHMARK_BRANCH} {BENCHMARK_REPO} &&\
     pip install -e grasping-benchmarks-panda/ &&\
     cd ${CATKIN_WS_DIR} &&\
     rosdep update &&\
@@ -187,9 +176,7 @@ RUN find ${WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
-##############################################
 # Image initialization
-# ====================
 ENV USERNAME=docker
 
 # Grasp Planner Definition

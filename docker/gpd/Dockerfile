@@ -3,38 +3,40 @@
 ARG from=ubuntu:bionic
 FROM ${from}
 
+ARG BENCHMARK_REPO=https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git
+ARG BENCHMARK_BRANCH=master
+
 # Change default shell to bash
 SHELL ["/bin/bash", "-c"]
 
 # Install packages
-# ================
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends --fix-missing\
-        sudo \
-        gosu \
-        software-properties-common \
-        git \
-        wget \
-        curl \
-        nano \
-        unzip \
-        libgl1-mesa-glx \
-        libgl1-mesa-dri \
-        mesa-common-dev \
-        apt-transport-https \
-        apt-utils \
-        dbus-x11 \
-        bash-completion \
-        gdb \
-        ssh \
-        iputils-ping \
-        gnupg \
-        gnupg2 \
-        xvfb \
-        mercurial \
-        freeglut3-dev \
-        libflann-dev \
-        &&\
+    sudo \
+    gosu \
+    software-properties-common \
+    git \
+    wget \
+    curl \
+    nano \
+    unzip \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    mesa-common-dev \
+    apt-transport-https \
+    apt-utils \
+    dbus-x11 \
+    bash-completion \
+    gdb \
+    ssh \
+    iputils-ping \
+    gnupg \
+    gnupg2 \
+    xvfb \
+    mercurial \
+    freeglut3-dev \
+    libflann-dev \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
@@ -43,33 +45,33 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main" && \
     apt-get update &&\
     apt-get install -y --no-install-recommends --fix-missing\
-        gcc-8 \
-        g++-8 \
-        cmake \
-        cmake-curses-gui \
-        build-essential \
-        mc \
-        lynx \
-        libqhull* \
-        pkg-config \
-        libxmu-dev \
-        libxi-dev \
-        libboost-all-dev \
-        libeigen3-dev \
-        libusb-1.0-0-dev \
-        libudev-dev \
-        doxygen \
-        graphviz \
-        libgtest-dev \
-        libpcap-dev \
-        libgtk2.0-dev \
-        libavcodec-dev \
-        libavformat-dev \
-        libjpeg.dev \
-        libtiff4.dev \
-        libswscale-dev \
-        libjasper-dev \
-        &&\
+    gcc-8 \
+    g++-8 \
+    cmake \
+    cmake-curses-gui \
+    build-essential \
+    mc \
+    lynx \
+    libqhull* \
+    pkg-config \
+    libxmu-dev \
+    libxi-dev \
+    libboost-all-dev \
+    libeigen3-dev \
+    libusb-1.0-0-dev \
+    libudev-dev \
+    doxygen \
+    graphviz \
+    libgtest-dev \
+    libpcap-dev \
+    libgtk2.0-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libjpeg.dev \
+    libtiff4.dev \
+    libswscale-dev \
+    libjasper-dev \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 # Setup locales and timezone
@@ -86,54 +88,50 @@ RUN apt-get update &&\
 
 
 # Install python3
-# ===============
 ENV PYTHON_VERSION=3.6
 RUN add-apt-repository ppa:deadsnakes/ppa &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-dev \
-        libpython${PYTHON_VERSION}-dev \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
-        python3-pygments \
-        python3-numpy \
-        &&\
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    libpython${PYTHON_VERSION}-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    python3-pygments \
+    python3-numpy \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 
 # Install ROS Desktop Full
-# ========================
-
 # https://github.com/osrf/docker_images/blob/master/ros/
 ENV ROS_DISTRO=melodic
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com \
-                --recv-keys F42ED6FBAB17C654 &&\
+    --recv-keys F42ED6FBAB17C654 &&\
     echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" \
-        > /etc/apt/sources.list.d/ros-latest.list &&\
+    > /etc/apt/sources.list.d/ros-latest.list &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        ros-${ROS_DISTRO}-desktop-full \
-	ros-${ROS_DISTRO}-jsk-tools \
-        python-rosdep \
-        python-rosinstall \
-        python-rosinstall-generator \
-        python-vcstools \
-        python-wstool \
-        python-catkin-tools \
-        python3-catkin-pkg-modules \
-        python3-rospkg-modules \
-        python3-empy \
-        &&\
+    ros-${ROS_DISTRO}-desktop-full \
+    ros-${ROS_DISTRO}-jsk-tools \
+    python-rosdep \
+    python-rosinstall \
+    python-rosinstall-generator \
+    python-vcstools \
+    python-wstool \
+    python-catkin-tools \
+    python3-catkin-pkg-modules \
+    python3-rospkg-modules \
+    python3-empy \
+    &&\
     rm -rf /var/lib/apt/lists/* &&\
     rosdep init &&\
     rosdep update &&\
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc
 
 # Set workspace directories
-# =========================
 ENV WS_DIR=/workspace
 ENV CATKIN_WS_DIR=${WS_DIR}/catkin_ws
 ENV WS_INSTALL=${WS_DIR}/install
@@ -144,7 +142,6 @@ ARG WS_BIN=${WS_SOURCES}/bin
 RUN groupadd -K GID_MIN=900 -K GID_MAX=1100 runtimeusers
 
 # Install Eigen
-# =============
 RUN mkdir -p ${WS_SOURCES} &&\
     cd ${WS_SOURCES} &&\
     git clone -b 3.2 https://gitlab.com/libeigen/eigen.git eigen &&\
@@ -158,14 +155,12 @@ RUN mkdir -p ${WS_SOURCES} &&\
     find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install VTK
-# ============
 RUN apt-get update &&\
     apt-get install -y\
     libvtk7* &&\
     rm -rf /var/lib/apt/lists/*
 
 # Install PCL
-# ===========
 RUN cd ${WS_SOURCES}\
     && wget https://github.com/PointCloudLibrary/pcl/archive/pcl-1.9.0.zip \
     && unzip pcl-1.9.0.zip \
@@ -179,7 +174,6 @@ RUN cd ${WS_SOURCES}\
     && find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install Opencv
-# ==============
 RUN cd ${WS_SOURCES}\
     && wget https://github.com/opencv/opencv/archive/3.4.3.zip \
     && unzip 3.4.3.zip \
@@ -193,7 +187,6 @@ RUN cd ${WS_SOURCES}\
     && find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install CAFFE
-# =============
 RUN apt-get update &&\
     apt-get install -y \
     libprotobuf-dev \
@@ -215,35 +208,33 @@ RUN apt-get update &&\
     && mkdir build \
     && cd build \
     && cmake -D BUILD_python=OFF \
-        -D BUILD_python_layer=OFF \
-        -D BLAS=Atlas \
-        -D CUDA_rt_LIBRARY=/usr/local/cuda/lib64/libcudart.so \
-        -D CMAKE_INSTALL_PREFIX=${WS_INSTALL} \
-        ../ \
+    -D BUILD_python_layer=OFF \
+    -D BLAS=Atlas \
+    -D CUDA_rt_LIBRARY=/usr/local/cuda/lib64/libcudart.so \
+    -D CMAKE_INSTALL_PREFIX=${WS_INSTALL} \
+    ../ \
     && make -j 8 \
     && make install \
     && find ${WS_SOURCES} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ \
     && find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install gpd
-# ===========
 RUN cd ${WS_SOURCES}\
     && git clone https://github.com/atenpas/gpd gpd \
     && cd gpd \
     && mkdir build \
     && cd build \
     && cmake -D CMAKE_BUILD_TYPE=RELEASE \
-        -D CMAKE_INSTALL_PREFIX=${WS_INSTALL}\
-        -D USE_CAFFE=ON \
-	-D Caffe_DIR=${WS_INSTALL}/share/Caffe \
-        .. \
+    -D CMAKE_INSTALL_PREFIX=${WS_INSTALL}\
+    -D USE_CAFFE=ON \
+    -D Caffe_DIR=${WS_INSTALL}/share/Caffe \
+    .. \
     && make -j8  \
     && make install \
     && find ${WS_SOURCES} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ \
     && find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Create catkin_ws with dependencies/ros packages for python3
-# ===========================================================
 RUN apt-get update &&\
     sudo apt-get install -y libboost-all-dev &&\
     mkdir -p ${CATKIN_WS_DIR}/src && \
@@ -257,10 +248,8 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/*
 
 # Install benchmark-grasping
-# ==========================
-
 RUN cd ${CATKIN_WS_DIR}/src &&\
-    git clone https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git &&\
+    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} &&\
     pip3 install grasping-benchmarks-panda/ &&\
     cd ${CATKIN_WS_DIR} && \
     catkin config --extend /opt/ros/${ROS_DISTRO} -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCMAKE_BUILD_TYPE=Release -DGPD_ROS=ON -DPCL_DIR=${WS_INSTALL}/share/pcl-1.9 &&\
@@ -269,10 +258,7 @@ RUN cd ${CATKIN_WS_DIR}/src &&\
     echo 'source ${CATKIN_WS_DIR}/devel/setup.bash' >> /etc/bash.bashrc &&\
     echo 'export LD_LIBRARY_PATH=${WS_INSTALL}/lib:${LD_LIBRARY_PATH}' >> /etc/bash.bashrc
 
-# =============
 # FIX OWNERSHIP
-# =============
-
 RUN find ${WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
@@ -282,8 +268,6 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 # Image initialization
-# ====================
-
 ENV USERNAME=docker
 
 # Grasp Planner Definition
