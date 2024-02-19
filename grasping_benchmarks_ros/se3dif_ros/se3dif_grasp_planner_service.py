@@ -2,20 +2,23 @@
 
 from pathlib import Path
 import logging
+import copy
 import importlib
-import time
-from typing import List
-from uuid import uuid4
 
 import yaml
-import matplotlib as mpl
+import h5py
+import trimesh
+import scipy
 
-mpl.use("Agg")
-from matplotlib import pyplot as plt
 import ros_numpy
 from scipy.spatial.transform import Rotation
-import torch
 import numpy as np
+
+import numpy as np
+from se3dif.models.loader import load_model
+from se3dif.samplers import ApproximatedGrasp_AnnealedLD, Grasp_AnnealedLD
+from se3dif.utils import to_numpy, to_torch
+from se3dif.visualization import create_gripper_marker
 
 import rospy
 
@@ -33,90 +36,116 @@ class Se3DifGraspPlannerService:
         self,
         service_name: str,
         config_file: str,
-        debug_path: str,
+        # debug_path: str,
     ):
         logging.info("Starting Se3DifGraspPlannerService")
         self._service = rospy.Service(service_name, GraspPlanner, self.srv_handler)
 
-        # with open(config_file, "r") as f:
-        #     config = yaml.safe_load(f)
-        # logging.info("Loaded config from %s", config_file)
+        with open(config_file, "r") as f:
+            config = yaml.safe_load(f)
+        self._config = config
+        logging.info("Loaded config from %s", config_file)
 
-    def _create_sample(self, req: GraspPlannerRequest):
-        pass
+        self._model = load_model(
+            {
+                "device": self._config["device"],
+                "pretrained_model": self._config["model"],
+            }
+        )
 
-    def _create_response(self, grasps) -> GraspPlannerResponse:
-        response = GraspPlannerResponse()
-        for g in grasps:
-            grasp_msg = BenchmarkGrasp()
+    def _load_acronym_mesh(
+        self, dataset_path: Path, object_class: str, grasp_uuid: str
+    ) -> trimesh.Trimesh:
+        assert object_class in [
+            p.name for p in (dataset_path / "grasps").iterdir()
+        ], f"Object class {object_class} not found in dataset path {dataset_path}/grasps"
 
-            pose = PoseStamped()
-            # p.header.frame_id = self.ref_frame
-            pose.header.stamp = rospy.Time.now()
+        grasp_file_path = list(
+            (dataset_path / "grasps" / object_class).glob(
+                f"{object_class}_{grasp_uuid}*.h5"
+            )
+        )
 
-            pose.pose.position.x = g.center[0]
-            pose.pose.position.y = g.center[1]
-            pose.pose.position.z = g.center[2]
+        assert len(grasp_file_path) != 0, f"Grasp file not found: {grasp_file_path}"
+        assert (
+            len(grasp_file_path) < 2
+        ), f"Multiple grasp files found: {grasp_file_path}"
+        grasp_file_path = grasp_file_path[0]
 
-            # to let the robot gripper point to the flor we first need to rotate around the z-axis by 180°
-            # the gripper axis is along the robot eef y axis but the grasp angle is given wrt. the x axis
-            # therfore we need to add 90° to the grasp angle
-            quat = Rotation.from_euler("xyz", [np.pi, 0, g.angle + np.pi / 2]).as_quat()
-            pose.pose.orientation.x = quat[0]
-            pose.pose.orientation.y = quat[1]
-            pose.pose.orientation.z = quat[2]
-            pose.pose.orientation.w = quat[3]
+        grasp_data = h5py.File(grasp_file_path, "r")
+        mesh_scale = grasp_data["object"]["scale"][()]
+        mesh_file_path = (
+            dataset_path
+            / "meshes"
+            / grasp_data["object"]["file"][()].decode("utf-8")[len("meshes") + 1 :]
+        )
 
-            grasp_msg.pose = pose
+        mesh = trimesh.load_mesh(mesh_file_path)
+        if type(mesh) == trimesh.scene.scene.Scene:
+            mesh = trimesh.util.concatenate(mesh.dump())
+        mesh = mesh.apply_translation(-mesh.centroid)
+        mesh = mesh.apply_scale(mesh_scale)
 
-            grasp_msg.score.data = g.quality
-            grasp_msg.width.data = g.width
+        return mesh
 
-            response.grasp_candidates.append(grasp_msg)
+    def _get_pointcloud_for_inference(
+        self,
+        mesh,
+        random_rotation: bool = False,
+        scaling_factor: float = 8.0,
+        n_points: int = 1000,
+    ):
+        mesh = copy.deepcopy(mesh)
 
-        return response
+        H_rot = np.eye(4)
+        if random_rotation:
+            H_rot[:3, :3] = scipy.spatial.transform.Rotation.random().as_matrix()
+        mesh.apply_transform(H_rot)
 
-    def _save_debug_information(self):
-        pass
+        mesh.apply_scale(scaling_factor)
+
+        pointcloud = mesh.sample(n_points)
+
+        return pointcloud, mesh, H_rot
 
     def srv_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
         logging.info("Received service call")
 
-        # sample = self._create_sample(req)
-        # logging.info(f"Processing datapoint: {sample}")
+        pointcloud = req.cloud
+        pointcloud = ros_numpy.numpify(pointcloud)
 
-        # input_tensor = self._preprocessor(sample)
-        # input_tensor = input_tensor.to(self._device)
-        # input_tensor = input_tensor.unsqueeze(0)
+        mesh = self._load_acronym_mesh(Path("/home/data/"), "ScrewDriver", "28d")
 
-        # with torch.no_grad():
-        #     output = self._model(input_tensor)
+        pointcloud, mesh_transformed, H_rot = self._get_pointcloud_for_inference(
+            mesh, random_rotation=False, scaling_factor=8.0, n_points=1000
+        )
 
-        # # the number of candidates to return is given in the service request
-        # # therefore we need to overwrrite the value in the postprocessor
-        # self._postprocessor.grasp_localizer.grasps = req.n_of_candidates
+        self._model.set_latent(
+            to_torch(pointcloud[None, ...], self._config["device"]),
+            batch=self._config["batch"],
+        )
+        generator = Grasp_AnnealedLD(
+            self._model,
+            batch=self._config["batch"],
+            T=70,
+            T_fit=50,
+            k_steps=2,
+            device=self._config["device"],
+        )
 
-        # grasps_img = self._postprocessor(output)
-        # logging.info(f"Found {len(grasps_img)} grasps")
-
-        # grasps_world = [
-        #     self._img2world_converter(
-        #         g_img,
-        #         sample.depth,
-        #         sample.cam_intrinsics,
-        #         sample.cam_rot,
-        #         sample.cam_pos,
-        #     )
-        #     for g_img in grasps_img
-        # ]
-
-        # logging.info("saving debug information")
-        # self._save_debug_information(sample, grasps_img, grasps_world)
-
-        # response = self._create_response(grasps_world)
-        # logging.info("Created response")
+        H_grasps = to_numpy(generator.sample())
+        H_grasps_rescaled = H_grasps.copy()
+        H_grasps_rescaled[:, :3, 3] /= 8.0
 
         response = GraspPlannerResponse()
+
+        scene = trimesh.Scene()
+        scene.add_geometry(mesh)
+
+        for H_grasp in H_grasps_rescaled:
+            scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
+
+        scene.show()
 
         return response
 
@@ -132,7 +161,7 @@ if __name__ == "__main__":
     Se3DifGraspPlannerService(
         rospy.get_param("~grasp_planner_service_name"),
         Path(rospy.get_param("~config_file")),
-        Path(rospy.get_param("~debug_path")),
+        # Path(rospy.get_param("~debug_path")),
     )
 
     rospy.spin()
