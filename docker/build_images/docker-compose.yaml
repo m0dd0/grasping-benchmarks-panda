@@ -55,3 +55,21 @@ services:
               - driver: nvidia
                 capabilities: [gpu]
                 count: all
+
+    dexnet:
+      build:
+        context: ../dexnet
+        dockerfile: Dockerfile
+        args:
+          from: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
+          BENCHMARK_REPO: https://github.com/m0dd0/grasping-benchmarks-panda.git
+          BENCHMARK_BRANCH: develop
+      image: dexnet
+      network_mode: host
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                capabilities: [gpu]
+                count: all
