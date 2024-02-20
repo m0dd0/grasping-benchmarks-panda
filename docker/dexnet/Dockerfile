@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:experimental
-
 ARG from=ubuntu:bionic
 FROM ${from}
 
@@ -8,6 +6,18 @@ ARG BENCHMARK_BRANCH=master
 
 # Change default shell to bash
 SHELL ["/bin/bash", "-c"]
+
+# Setup locales and timezone
+ENV TZ=Europe/Rome
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends locales locales-all tzdata &&\
+    rm -rf /var/lib/apt/lists/* &&\
+    echo "${TZ}" | tee /etc/timezone &&\
+    dpkg-reconfigure --frontend noninteractive tzdata
 
 # Install packages
 RUN apt-get update &&\
@@ -44,18 +54,6 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     build-essential \
     &&\
     rm -rf /var/lib/apt/lists/*
-
-# Setup locales and timezone
-ENV TZ=Europe/Rome
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-ENV LANGUAGE=en_US.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update &&\
-    apt-get install -y --no-install-recommends locales locales-all tzdata &&\
-    rm -rf /var/lib/apt/lists/* &&\
-    echo "${TZ}" | tee /etc/timezone &&\
-    dpkg-reconfigure --frontend noninteractive tzdata
 
 # Install python3
 ENV PYTHON_VERSION=3.7
