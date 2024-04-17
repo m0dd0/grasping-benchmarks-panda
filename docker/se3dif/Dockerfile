@@ -59,11 +59,14 @@ RUN apt-get update && \
 RUN python3 -m pip install --upgrade pip
 
 # here we install all the dependecies defined in the requirements.txt file of thr grasp_diffusion package
-# we keep all version except for the theseus-ai package, which was originally set to 0.1.3 but caused many hard to solve issues when trying to install it into the docker container
-# to avaoid that the problematic version of theseus-ai is tried to be installed when installing the grasp_diffusion package one must add the --no-deps flag to the pip install command
+# we need to use different versions of some packages than used in the original repo in order to ensure compatibility
+# for this reason we install the packages manually here and use the --no-deps flag to avoid installing the original versions in thr next step
+# versions that are changed in comparison to the original requirements.txt file are:
+    # - numpy==1.21.6 -> numpy==1.23.5
+RUN python3 -m pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 RUN python3 -m pip install \
-    numpy==1.21.6 \
-    theseus-ai==0.2.1 \
+    numpy==1.23.5 \ 
+    theseus-ai==0.1.3 \
     tqdm==4.64.1 \
     configargparse==1.5.3 \
     h5py==3.7.0 \
