@@ -11,7 +11,7 @@
         "--net",
         "host",
         "--mount",
-        "type=bind,source=/home/moritz/Documents/data,target=/home/data"
+        "type=bind,source=./docker/se3dif/additional_data/data,target=/home/data"
     ],
     "customizations": {
         "vscode": {
@@ -31,5 +31,5 @@
     },
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/grasping-benchmark-panda,type=bind",
     "workspaceFolder": "/home/catkin_ws/src/grasping-benchmark-panda",
-    "postCreateCommand": "bash ./.devcontainer/se3dif/postCreateCommand.sh",
+    "postCreateCommand": "bash ./.devcontainer/se3dif/postCreateCommand.sh"
 }
