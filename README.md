@@ -1,5 +1,14 @@
 # grasping-benchmarks-panda
 
+## Algorithms
+This repo contains wrappers for multiple grasp planning algorithms.
+In the following a short description of the algorithms is given.
+
+### Se3Diffusion
+https://github.com/robotgradient/grasp_diffusion
+
+TODO
+
 ## Docker Container
 For most algorithms a Dockerfile has been created that can be used to build a docker container which runs the corresponding ROS-service.
 The docker containers cotnain all the necessary dependecies for the algorithms to run and the alforithms themselves.
