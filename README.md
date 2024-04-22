@@ -15,6 +15,12 @@ The docker containers cotnain all the necessary dependecies for the algorithms t
 They also contain ROS and this repo.
 All of them launch the corresponding ROS-service when the container is started.
 
+### Dependesncies and setup.py file
+Most of the times the external algorithms we benchmark are poorly packaged or use some exotic dependencies.
+For this reason, it often fails to directly install them as a (extra) dependency of this repo by listing them in the `setup.py` file.
+Therefore, we decided to include the installation of the dependencies in the Dockerfile of the corresponding algorithm and do not list them in the `setup.py` file.
+So if you want to install the algorithms without using docker you need to follow the installation instructions of the respective algorithm.
+
 ### Additional Data
 Some of the docker container require you to mount special data directories to the container beacause they can not be downloaded in an automated way from within the Dockerfile as they are not publically available or are too large.
 Except from that, the docker containers are self-contained.

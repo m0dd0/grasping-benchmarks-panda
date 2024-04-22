@@ -62,7 +62,7 @@ RUN python3 -m pip install --upgrade pip
 # we need to use different versions of some packages than used in the original repo in order to ensure compatibility
 # for this reason we install the packages manually here and use the --no-deps flag to avoid installing the original versions in thr next step
 # versions that are changed in comparison to the original requirements.txt file are:
-    # - numpy==1.21.6 -> numpy==1.23.5
+# - numpy==1.21.6 -> numpy==1.23.5
 RUN python3 -m pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 RUN python3 -m pip install \
     numpy==1.23.5 \ 

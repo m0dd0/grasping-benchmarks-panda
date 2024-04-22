@@ -24,7 +24,7 @@ setuptools.setup(
         "nptyping",
     ],
     extras_require={
-        "dev": ["black", "pylint"],
+        "dev": ["black", "pylint", "notebook"],
         "grconvnet": [
             "pyyaml",
             "numpy",
@@ -37,15 +37,6 @@ setuptools.setup(
             "Pillow",
             "rospkg",
             # TODO check if https://github.com/m0dd0/GrConvNetBenchmark.git can be installed from here
-        ],
-        "contactgraspnet": [
-            # TODO check if this can be successfully installed from the setup.py instead of the Dockerfile
-            # "contact_graspnet @ git+https://github.com/m0dd0/ContactGraspnetBenchmark@develop",
-        ],
-        "se3dif": [
-            # grasp_diffusion package gets installed in Dockerfile as we need to install dependencies of grasp_diffusion package manually to avoid conflicts
-            # also it needs to be installed with the -e flag for some reason which is not possible to specify in the setup.py
-            # "se3dif @ git+https://github.com/TheCamusean/grasp_diffusion@master",
         ],
     },
 )

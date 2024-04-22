@@ -3,4 +3,4 @@ rosdep update
 rosdep install --from-paths src --ignore-src -y -r 
 catkin config --extend /opt/ros/noetic 
 catkin build 
-pip install -e /home/catkin_ws/src/grasping-benchmark-panda[se3dif]
+pip install -e /home/catkin_ws/src/grasping-benchmark-panda[dev]
