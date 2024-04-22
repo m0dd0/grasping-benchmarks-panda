@@ -58,6 +58,20 @@ This includes the linking of the local copy of this repo into the container.
 Note that you need to change the source filepath for mounting the additional data directories in the `.devcontainer.json` file to the correct path on your system or put the data in the correct expsected path on your system. (See above)
 Also note, that when using the devcontainer the `CMD` of the Dockerfile is ignored.
 
+## Architecture and Interfaces
+The goal of this Repo is to provide a unified interface for multiple grasp planning algorithms.
+For this reason, we define a common ROS message for the grasp requests and a common ROS service for the grasp planning algorithms.
+Also python base classes are provided that should be used to implement the wrappers for the algorithms.
+So if you want to add a new algorithm to this repo you should:
+- first subclass `BaseGraspPlanner` and implement the abstract `plan_grasps` method and optionally the `__init__` method.
+- write a ROS service which uses your subclass of `BaseGraspPlanner` to plan grasps.
+
+### Configuration Files
+
+
+
+
+
 ## Essentials from the original README
 Here the shortest version of instructions on how to use this modified version of the repo:
 

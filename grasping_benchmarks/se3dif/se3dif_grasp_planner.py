@@ -1,39 +1,36 @@
-"""_summary_
-"""
-
-from pathlib import Path
-from typing import List
-import copy
-
-import yaml
+from typing import List, Dict
 
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
 
 from se3dif.models.loader import load_model
+from se3dif.samplers import ApproximatedGrasp_AnnealedLD, Grasp_AnnealedLD
+from se3dif.utils import to_numpy, to_torch
+from se3dif.visualization import create_gripper_marker
+
+import trimesh
 
 
 class Se3DifGraspPlanner(BaseGraspPlanner):
-    @classmethod
-    def from_config_file(cls, config_file: Path) -> "Se3DifGraspPlanner":
-        """Creates a new instance of the GRConvNetGraspPlanner from a config file.
-
-        Args:
-            config_file (Path): Path to the yaml config file. The yaml file must
-                contain the same parameters as the __init__ method.
-
-        Returns:
-            SE3DifGraspPlanner: The new instance
-        """
-        with open(config_file, "r") as f:
-            cfg = yaml.safe_load(f)
-
-        return cls(**cfg)
-
     def __init__(
         self,
-        cfg: dict,
+        cfg: Dict,
     ):
         super(Se3DifGraspPlanner, self).__init__(cfg)
+
+        self._model = load_model(
+            {
+                "device": self.cfg["device"],
+                "pretrained_model": self.cfg["pretrained_model"],
+            }
+        )
+        self._generator = Grasp_AnnealedLD(
+            self._model,
+            batch=self.cfg["batch"],
+            T=self.cfg["T"],
+            T_fit=self.cfg["T_fit"],
+            k_steps=self.cfg["k_steps"],
+            device=self.cfg["device"],
+        )
 
     def plan_grasp(
         self, camera_data: CameraData, n_candidates: int = 1
@@ -45,17 +42,24 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             camera_data (CameraData): Contains the data to compute the grasp poses
             n_candidates (int, optional): The number of grasp candidates to compute. Defaults to 1.
         """
-
         self._camera_data = camera_data
 
-        pointcloud = copy.deepcopy(camera_data.pointcloud)
-        pointcloud *= 8.0
+        self._model.set_latent(
+            to_torch(camera_data.pointcloud[None, ...], self.cfg["device"]),
+            batch=self.cfg["batch"],
+        )
 
-        model = load_model({"device": DEVICE, "pretrained_model": MODEL})
+        self._H_grasps = to_numpy(self._generator.sample())
 
-        return self._grasp_poses
+        return self._H_grasps
 
     def visualize(self):
         """Plot the grasp poses"""
 
-        return fig
+        scene = trimesh.Scene()
+        scene.add_geometry(self._mesh)
+
+        for H_grasp in self._H_grasps:
+            scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
+
+        scene.show()
