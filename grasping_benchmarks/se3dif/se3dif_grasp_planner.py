@@ -55,11 +55,11 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
 
     def visualize(self):
         """Plot the grasp poses"""
+        raise NotImplementedError
+        # scene = trimesh.Scene()
+        # scene.add_geometry(self._mesh)
 
-        scene = trimesh.Scene()
-        scene.add_geometry(self._mesh)
+        # for H_grasp in self._H_grasps:
+        #     scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
 
-        for H_grasp in self._H_grasps:
-            scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
-
-        scene.show()
+        # scene.show()
