@@ -11,7 +11,7 @@ import math
 import numpy as np
 
 from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
-from grasping_benchmarks.base.grasp import Grasp6D
+from grasping_benchmarks.base.grasp_data import Grasp6D
 from grasping_benchmarks.base import transformations as tr
 
 import mayavi.mlab as mlab

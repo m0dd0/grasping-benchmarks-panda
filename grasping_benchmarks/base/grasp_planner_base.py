@@ -17,41 +17,7 @@ try:
 except ImportError as e:
     ROS_AVAILABLE = False
 
-from .grasp import Grasp6D
-
-
-def service_request_to_camera_data(req: "GraspPlannerRequest"):
-    rgb = ros_numpy.numpify(req.color_image)
-    depth = ros_numpy.numpify(req.depth_image)
-    seg = ros_numpy.numpify(req.seg_image)
-
-    pc = ros_numpy.numpify(req.cloud)
-
-    camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
-
-    # 4x4 homogenous tranformation matrix
-    camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
-
-    camera_data = CameraData(
-        rgb,
-        depth,
-        pc,  # TODO check format and convert if needed
-        seg,
-        camera_matrix,
-        camera_trafo_h[:3, 3],
-        camera_trafo_h[:3, :3],
-    )
-
-
-@dataclass
-class CameraData:
-    rgb_img: NpArray["H, W, 3", np.uint8] = None
-    depth_img: NpArray["H, W", np.uint16] = None
-    pointcloud: NpArray["N, 3", np.float32] = None
-    seg_img: NpArray["H, W", np.uint8] = None
-    cam_intrinsics: NpArray["3, 3", np.float32] = None
-    cam_pos: NpArray["3", np.float32] = None
-    cam_rot: NpArray["3, 3", np.float32] = None
+from .grasp_data import Grasp6D
 
 
 class BaseGraspPlanner(object):

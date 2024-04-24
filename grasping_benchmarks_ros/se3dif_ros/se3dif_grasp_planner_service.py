@@ -14,7 +14,7 @@ from se3dif.visualization import create_gripper_marker
 import rospy
 
 from grasping_benchmarks.base import CameraData, service_request_to_camera_data
-from grasping_benchmarks.base.grasp import Grasp6D, grasp_data_to_service_response
+from grasping_benchmarks.base.grasp_data import Grasp6D, grasp_data_to_service_response
 from grasping_benchmarks.se3dif import Se3DifGraspPlanner
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,

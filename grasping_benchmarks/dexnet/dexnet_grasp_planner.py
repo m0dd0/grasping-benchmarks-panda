@@ -60,7 +60,7 @@ from gqcnn.utils import GripperMode, NoValidGraspsException
 
 from grasping_benchmarks.base import transformations
 from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
-from grasping_benchmarks.base.grasp import Grasp6D
+from grasping_benchmarks.base.grasp_data import Grasp6D
 
 
 class DexnetGraspPlanner(BaseGraspPlanner):

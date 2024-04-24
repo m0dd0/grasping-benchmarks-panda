@@ -10,7 +10,7 @@ import math
 import os
 import time
 
-from grasping_benchmarks.base import grasp
+from grasping_benchmarks.base import grasp_data
 from grasping_benchmarks.base.transformations import (
     matrix_to_quaternion,
     quaternion_to_matrix,
