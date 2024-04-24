@@ -3,35 +3,37 @@
 ARG from=ubuntu:bionic
 FROM ${from}
 
+ARG BENCHMARK_REPO=https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git
+ARG BENCHMARK_BRANCH=master
+
 # Change default shell to bash
 SHELL ["/bin/bash", "-c"]
 
 # Install packages
-# ================
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends \
-        sudo \
-        gosu \
-        software-properties-common \
-        git \
-        wget \
-        curl \
-        nano \
-        unzip \
-        libgl1-mesa-glx \
-        libgl1-mesa-dri \
-        apt-transport-https \
-        apt-utils \
-        dbus-x11 \
-        bash-completion \
-        gdb \
-        ssh \
-        openssh-client \
-        iputils-ping \
-        gnupg \
-        gnupg2 \
-        xvfb \
-        &&\
+    sudo \
+    gosu \
+    software-properties-common \
+    git \
+    wget \
+    curl \
+    nano \
+    unzip \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    apt-transport-https \
+    apt-utils \
+    dbus-x11 \
+    bash-completion \
+    gdb \
+    ssh \
+    openssh-client \
+    iputils-ping \
+    gnupg \
+    gnupg2 \
+    xvfb \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
@@ -39,12 +41,12 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     add-apt-repository ppa:ubuntu-toolchain-r/test &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        gcc-8 \
-        g++-8 \
-        cmake \
-        cmake-curses-gui \
-        build-essential \
-        &&\
+    gcc-8 \
+    g++-8 \
+    cmake \
+    cmake-curses-gui \
+    build-essential \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 # Setup locales and timezone
@@ -61,47 +63,44 @@ RUN apt-get update &&\
 
 
 # Install python 3
-# ================
 ENV PYTHON_VERSION=3.6
 RUN add-apt-repository ppa:deadsnakes/ppa &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-dev \
-        libpython${PYTHON_VERSION}-dev \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
-        python3-pygments \
-        python3-numpy \
-        &&\
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    libpython${PYTHON_VERSION}-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    python3-pygments \
+    python3-numpy \
+    &&\
     rm -rf /var/lib/apt/lists/*
 
 
 # Install ROS Desktop Full
-# ========================
-
 # https://github.com/osrf/docker_images/blob/master/ros/
 ENV ROS_DISTRO=melodic
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com \
-                --recv-keys F42ED6FBAB17C654 &&\
+    --recv-keys F42ED6FBAB17C654 &&\
     echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" \
-        > /etc/apt/sources.list.d/ros-latest.list &&\
+    > /etc/apt/sources.list.d/ros-latest.list &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        ros-${ROS_DISTRO}-desktop-full \
-	ros-${ROS_DISTRO}-jsk-tools \
-        python-rosdep \
-        python-rosinstall \
-        python-rosinstall-generator \
-        python-vcstools \
-        python-wstool \
-        python-catkin-tools \
-        python3-catkin-pkg-modules \
-        python3-rospkg-modules \
-        python3-empy \
-        &&\
+    ros-${ROS_DISTRO}-desktop-full \
+    ros-${ROS_DISTRO}-jsk-tools \
+    python-rosdep \
+    python-rosinstall \
+    python-rosinstall-generator \
+    python-vcstools \
+    python-wstool \
+    python-catkin-tools \
+    python3-catkin-pkg-modules \
+    python3-rospkg-modules \
+    python3-empy \
+    &&\
     rm -rf /var/lib/apt/lists/* &&\
     rosdep init &&\
     rosdep update &&\
@@ -109,8 +108,6 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com \
 
 
 # Install superquadric-lib and its dependencies (VTK, Ipopt, SWIG)
-# ===============================================================
-
 ENV WS_DIR=/workspace
 ENV CATKIN_WS_DIR=${WS_DIR}/catkin_ws
 ENV WS_INSTALL=${WS_DIR}/install
@@ -126,11 +123,11 @@ RUN mkdir -p ${WS_SOURCES} && cd ${WS_SOURCES} &&\
     cd vtk && git checkout tags/v8.2.0 &&\
     mkdir -p build && cd build && \
     cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=${WS_INSTALL} \
-      -DVTK_PYTHON_VERSION=${PYTHON_VERSION} \
-      -DVTK_WRAP_PYTHON=ON \
-      .. &&\
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${WS_INSTALL} \
+    -DVTK_PYTHON_VERSION=${PYTHON_VERSION} \
+    -DVTK_WRAP_PYTHON=ON \
+    .. &&\
     make -j8 && make install &&\
     rm -rf ${WS_SOURCES}/vtk
 
@@ -139,10 +136,10 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main" &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        autotools-dev \
-        automake \
-        bison \
-        libpcre3-dev &&\
+    autotools-dev \
+    automake \
+    bison \
+    libpcre3-dev &&\
     rm -rf /var/lib/apt/lists/* &&\
     cd /tmp/ &&\
     curl https://netcologne.dl.sourceforge.net/project/swig/swig/swig-4.0.1/swig-4.0.1.tar.gz | tar xvz &&\
@@ -155,9 +152,9 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 # IPOPT
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends \
-        file \
-        gfortran \
-        &&\
+    file \
+    gfortran \
+    &&\
     rm -rf /var/lib/apt/lists/* &&\
     mkdir -p ${WS_SOURCES}/ipopt_tmp && cd ${WS_SOURCES}/ipopt_tmp &&\
     curl -o coinbrew https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew &&\
@@ -182,12 +179,12 @@ RUN mkdir ${WS_INSTALL}/include/coin/ &&\
     cd ${WS_SOURCES}/superquadric-lib &&\
     mkdir -p build && cd build &&\
     cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=${WS_INSTALL} \
-        -DENABLE_BINDINGS=ON \
-        -DYARP_EXE=OFF \
-        -DVTK_DIR=${WS_INSTALL}/lib/cmake/vtk-8.2 \
-        .. &&\
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${WS_INSTALL} \
+    -DENABLE_BINDINGS=ON \
+    -DYARP_EXE=OFF \
+    -DVTK_DIR=${WS_INSTALL}/lib/cmake/vtk-8.2 \
+    .. &&\
     make -j8 && make install &&\
     find ${IIT_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${IIT_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
@@ -196,7 +193,6 @@ ENV PYTHONPATH=${PYTHONPATH}:${WS_INSTALL}/lib/superquadriclib/bindings
 
 
 # Create catkin_ws with dependencies/ros packages for python3
-# ===========================================================
 RUN apt-get update &&\
     pip3 install PyYAML==5.1 &&\
     sudo apt-get install -y libboost-all-dev &&\
@@ -215,12 +211,9 @@ RUN apt-get update &&\
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install benchmark-grasping
-# ==========================
-
 #RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 RUN cd ${CATKIN_WS_DIR}/src &&\
-    git clone https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git &&\
+    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} &&\
     pip3 install -e grasping-benchmarks-panda/ &&\
     cd ${CATKIN_WS_DIR} &&\
     catkin config --extend /opt/ros/${ROS_DISTRO} -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCMAKE_BUILD_TYPE=Release -DGPD_ROS=OFF && \
@@ -228,10 +221,7 @@ RUN cd ${CATKIN_WS_DIR}/src &&\
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 
-# =============
 # FIX OWNERSHIP
-# =============
-
 RUN find ${WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${WS_INSTALL} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
@@ -241,8 +231,6 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 # Image initialization
-# ====================
-
 ENV USERNAME=docker
 
 # Grasp Planner Definition

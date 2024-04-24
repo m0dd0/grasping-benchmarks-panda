@@ -1,47 +1,11 @@
-# syntax=docker/dockerfile:experimental
-
 ARG from=ubuntu:bionic
 FROM ${from}
 
+ARG BENCHMARK_REPO=https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git
+ARG BENCHMARK_BRANCH=master
+
 # Change default shell to bash
 SHELL ["/bin/bash", "-c"]
-
-# Install packages
-# ================
-RUN apt-get update &&\
-    apt-get install -y --no-install-recommends \
-        sudo \
-        gosu \
-        software-properties-common \
-        git \
-        wget \
-        curl \
-        nano \
-        unzip \
-        apt-transport-https \
-        apt-utils \
-        dbus-x11 \
-        bash-completion \
-        gdb \
-        ssh \
-        iputils-ping \
-        gnupg \
-        gnupg2 \
-        xvfb \
-        &&\
-    rm -rf /var/lib/apt/lists/*
-
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
-    apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main" &&\
-    add-apt-repository ppa:ubuntu-toolchain-r/test &&\
-    apt-get update &&\
-    apt-get install -y --no-install-recommends \
-        gcc-8 \
-        g++-8 \
-        cmake \
-        build-essential \
-        &&\
-    rm -rf /var/lib/apt/lists/*
 
 # Setup locales and timezone
 ENV TZ=Europe/Rome
@@ -55,56 +19,87 @@ RUN apt-get update &&\
     echo "${TZ}" | tee /etc/timezone &&\
     dpkg-reconfigure --frontend noninteractive tzdata
 
+# Install packages
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends \
+    sudo \
+    gosu \
+    software-properties-common \
+    git \
+    wget \
+    curl \
+    nano \
+    unzip \
+    apt-transport-https \
+    apt-utils \
+    dbus-x11 \
+    bash-completion \
+    gdb \
+    ssh \
+    iputils-ping \
+    gnupg \
+    gnupg2 \
+    xvfb \
+    &&\
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
+    apt-add-repository "deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main" &&\
+    add-apt-repository ppa:ubuntu-toolchain-r/test &&\
+    apt-get update &&\
+    apt-get install -y --no-install-recommends \
+    gcc-8 \
+    g++-8 \
+    cmake \
+    build-essential \
+    &&\
+    rm -rf /var/lib/apt/lists/*
 
 # Install python3
-# ===============
 ENV PYTHON_VERSION=3.7
 RUN add-apt-repository ppa:deadsnakes/ppa &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-dev \
-        libpython${PYTHON_VERSION}-dev \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
-        python3-pygments \
-        python3-numpy \
-        &&\
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    libpython${PYTHON_VERSION}-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    python3-pygments \
+    python3-numpy \
+    &&\
     rm -rf /var/lib/apt/lists/*
 RUN python3 -m pip install --upgrade pip
 
 # Install ROS Desktop Full
-# ========================
-
 # https://github.com/osrf/docker_images/blob/master/ros/
 ENV ROS_DISTRO=melodic
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com \
-                --recv-keys F42ED6FBAB17C654 &&\
+    --recv-keys F42ED6FBAB17C654 &&\
     echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" \
-        > /etc/apt/sources.list.d/ros-latest.list &&\
+    > /etc/apt/sources.list.d/ros-latest.list &&\
     apt-get update &&\
     apt-get install -y --no-install-recommends \
-        ros-${ROS_DISTRO}-desktop-full \
-	    ros-${ROS_DISTRO}-jsk-tools \
-        python-rosdep \
-        python-rosinstall \
-        python-rosinstall-generator \
-        python-vcstools \
-        python-wstool \
-        python-catkin-tools \
-        python3-catkin-pkg-modules \
-        python3-rospkg-modules \
-        python3-empy \
-        &&\
+    ros-${ROS_DISTRO}-desktop-full \
+    ros-${ROS_DISTRO}-jsk-tools \
+    python-rosdep \
+    python-rosinstall \
+    python-rosinstall-generator \
+    python-vcstools \
+    python-wstool \
+    python-catkin-tools \
+    python3-catkin-pkg-modules \
+    python3-rospkg-modules \
+    python3-empy \
+    &&\
     rm -rf /var/lib/apt/lists/* &&\
     rosdep init &&\
     rosdep update &&\
     echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /etc/bash.bashrc
 
 # Set workspace directories
-# =========================
 ENV WS_DIR=/workspace
 ENV CATKIN_WS_DIR=${WS_DIR}/catkin_ws
 ENV WS_INSTALL=${WS_DIR}/install
@@ -115,8 +110,6 @@ ARG WS_BIN=${WS_SOURCES}/bin
 RUN groupadd -K GID_MIN=900 -K GID_MAX=1100 runtimeusers
 
 # Install Dexnet dependencies
-# ===========================
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python3-opengl \
@@ -148,9 +141,7 @@ RUN apt-get update && \
     &&\
     rm -rf /var/lib/apt/lists/*
 
-
 # Install GQCNN
-# ==============
 RUN cd ${WS_SOURCES} &&\
     git clone https://github.com/BerkeleyAutomation/gqcnn.git &&\
     cd gqcnn/ &&\
@@ -163,7 +154,6 @@ RUN cd ${WS_SOURCES} &&\
     find ${WS_SOURCES} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Create catkin_ws with dependencies/ros packages for python3
-# ===========================================================
 RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     cd ${CATKIN_WS_DIR} &&\
     wstool init &&\
@@ -178,21 +168,15 @@ RUN mkdir -p ${CATKIN_WS_DIR}/src && \
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
 # Install benchmark-grasping
-# ==========================
-
-#RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 RUN cd ${CATKIN_WS_DIR}/src &&\
-    git clone https://github.com/nicolas-schreiber/grasping-benchmarks-panda.git &&\
+    git clone -b ${BENCHMARK_BRANCH} ${BENCHMARK_REPO} &&\
     pip3 install -e grasping-benchmarks-panda/ &&\
     cd ${CATKIN_WS_DIR} &&\
     catkin config --extend /opt/ros/${ROS_DISTRO} -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCMAKE_BUILD_TYPE=Release -DGPD_ROS=OFF && \
     catkin build  -j8 && \
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
-# =============
 # FIX OWNERSHIP
-# =============
 RUN find ${WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+ &&\
     find ${CATKIN_WS_DIR} -not -group runtimeusers -exec chgrp runtimeusers {} \; -exec chmod g+rw {} \+
 
@@ -201,7 +185,6 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 # Image initialization
-# ====================
 ENV USERNAME=docker
 
 # Grasp Planner Definition
