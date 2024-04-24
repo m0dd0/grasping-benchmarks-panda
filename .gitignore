@@ -4,4 +4,4 @@
 bin/
 *.tmp
 
-docker/containers/*/additional_data/*
+docker/environments/*/additional_data/*

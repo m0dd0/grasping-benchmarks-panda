@@ -1,6 +1,6 @@
 {
     "build": {
-        "dockerfile": "../../docker/se3dif/Dockerfile",
+        "dockerfile": "../../docker/environments/se3dif/Dockerfile",
         "args": {
             "IS_DEVCONTAINER_BUILD": "true",
         }
@@ -11,7 +11,7 @@
         "--net",
         "host",
         "--mount",
-        "type=bind,source=./docker/se3dif/additional_data/data,target=/home/data"
+        "type=bind,source=./docker/environments/se3dif/additional_data/data,target=/home/data"
     ],
     "customizations": {
         "vscode": {
