@@ -41,17 +41,6 @@ class BaseGraspPlanner(object):
                 and unifrormly access all currently used configurations of the planner.
         """
         self._cfg = cfg
-        # maintains a list of the lastly proposed grasp candidates
-        self._grasp_poses: List[Grasp] = None
-        # contains the camera data send to the last plan_grasp call
-        self._camera_data = None
-
-    def reset(self):
-        """Sets the GraspPlanner back to its inital state. Especially removes all
-        graps poses.
-        """
-        self._grasp_poses = None
-        self._camera_data = None
 
     @abstractmethod
     def plan_grasp(self, camera_data: CameraData, n_candidates: int = 1) -> List[Grasp]:
@@ -69,20 +58,6 @@ class BaseGraspPlanner(object):
     def visualize(self):
         """Plot the lastly computed grasp poses"""
         raise NotImplementedError()
-
-    @property
-    def grasp_poses(self) -> List[Grasp]:
-        return self._grasp_poses
-
-    @property
-    def best_grasp(self):
-        if self._grasp_poses is None:
-            return None
-        return max(self._grasp_poses, key=lambda x: x.score)
-
-    @property
-    def camera_data(self):
-        return self._camera_data
 
     @property
     def cfg(self):

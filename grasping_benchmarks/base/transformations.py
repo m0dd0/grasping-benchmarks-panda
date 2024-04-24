@@ -87,26 +87,6 @@ def matrix_to_quaternion(matrix):
     return q
 
 
-# TODO
-def quaternion_to_eigen(quat):
-    raise NotImplementedError
-
-
-# TODO
-def eigen_to_quat(roll, pitch, yaw):
-    raise NotImplementedError
-
-
-# TODO
-def eigen_to_matrix(roll, pitch, yaw):
-    raise NotImplementedError
-
-
-# TODO
-def matrix_to_eigen(matrix):
-    raise NotImplementedError
-
-
 def quat_multiplication(a: np.ndarray, b: np.ndarray):
 
     if not a.shape == b.shape and a.shape == 4:
