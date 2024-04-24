@@ -4,5 +4,4 @@
 bin/
 *.tmp
 
-grasping_benchmarks_ros/*/debug_information/*
-docker/*/additional_data/*
+docker/containers/*/additional_data/*
