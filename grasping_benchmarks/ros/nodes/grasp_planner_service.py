@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
+
 import logging
 from typing import List
 import importlib
 from pathlib import Path
 
-import numpy as np
 import yaml
 import rospy
 
@@ -32,7 +33,7 @@ class GraspPlannerService:
         self._config = config
         logging.info("Loaded config from %s", config_file)
 
-        self._planner = Se3DifGraspPlanner(config)
+        self._planner = None  # TODO
 
     def srv_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
         logging.info("Received service call")
@@ -48,15 +49,17 @@ class GraspPlannerService:
 
 if __name__ == "__main__":
     # the name we give here gets overwritten by the <node name=...> tag from the launch file
-    rospy.init_node("se3dif_grasp_planner")
+    rospy.init_node("unnamed_grasp_planner_node")
 
     # relaodinf the logging config is necessary due to ROS logging behavior: https://github.com/ros/ros_comm/issues/1384
     importlib.reload(logging)
     logging.basicConfig(level=logging.INFO)
 
-    GraspPlannerService(
-        rospy.get_param("~grasp_planner_service_name"),
-        Path(rospy.get_param("~config_file")),
-    )
+    print(rospy.get_param("~algorithm"))
+    # print(rospy.get_param("~config_file"))
+    # GraspPlannerService(
+    #    rospy.get_param("~grasp_planner_service_name"),
+    #    Path(rospy.get_param("~config_file")),
+    # )
 
     rospy.spin()

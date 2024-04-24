@@ -5,8 +5,6 @@
 from typing import Dict, List
 from abc import abstractmethod
 
-from grasping_benchmarks.base import Grasp, CameraData
-
 from dataclasses import dataclass
 
 import numpy as np

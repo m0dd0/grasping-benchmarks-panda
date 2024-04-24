@@ -5,8 +5,10 @@ from grasping_benchmarks.base import CameraData
 
 import rospy
 from geometry_msgs.msg import PoseStamped
-from grasping_benchmarks.ros.srv import GraspPlannerRequest
-from grasping_benchmarks.ros.msg import BenchmarkGrasp
+
+# the following are imports from the grasping_benchmarks_ros ROS package
+from grasping_benchmarks_ros.srv import GraspPlannerRequest
+from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
 
 def grasp_data_to_service_response(self) -> BenchmarkGrasp:
