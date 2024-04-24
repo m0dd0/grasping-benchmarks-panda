@@ -1,4 +1,12 @@
-import BenchmarkGrasp
+import numpy as np
+import ros_numpy
+
+from grasping_benchmarks.base import CameraData
+
+import rospy
+from geometry_msgs.msg import PoseStamped
+from grasping_benchmarks.ros.srv import GraspPlannerRequest
+from grasping_benchmarks.ros.msg import BenchmarkGrasp
 
 
 def grasp_data_to_service_response(self) -> BenchmarkGrasp:
@@ -22,7 +30,7 @@ def grasp_data_to_service_response(self) -> BenchmarkGrasp:
     return grasp_msg
 
 
-def service_request_to_camera_data(req: "GraspPlannerRequest"):
+def service_request_to_camera_data(req: GraspPlannerRequest):
     rgb = ros_numpy.numpify(req.color_image)
     depth = ros_numpy.numpify(req.depth_image)
     seg = ros_numpy.numpify(req.seg_image)

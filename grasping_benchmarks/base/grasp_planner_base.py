@@ -4,20 +4,8 @@
 
 from typing import Dict, List
 from abc import abstractmethod
-from dataclasses import dataclass
 
-import numpy as np
-
-from grasping_benchmarks.base.typing import NpArray
-
-ROS_AVAILABLE = True
-try:
-    from grasping_benchmarks_ros.srv import GraspPlannerRequest
-    import ros_numpy
-except ImportError as e:
-    ROS_AVAILABLE = False
-
-from .grasp_data import Grasp6D
+from grasping_benchmarks.base import Grasp, CameraData
 
 
 class BaseGraspPlanner(object):
@@ -32,7 +20,7 @@ class BaseGraspPlanner(object):
         """
         self._cfg = cfg
         # maintains a list of the lastly proposed grasp candidates
-        self._grasp_poses: List[Grasp6D] = None
+        self._grasp_poses: List[Grasp] = None
         # contains the camera data send to the last plan_grasp call
         self._camera_data = None
 
@@ -44,9 +32,7 @@ class BaseGraspPlanner(object):
         self._camera_data = None
 
     @abstractmethod
-    def plan_grasp(
-        self, camera_data: CameraData, n_candidates: int = 1
-    ) -> List[Grasp6D]:
+    def plan_grasp(self, camera_data: CameraData, n_candidates: int = 1) -> List[Grasp]:
         """Computes the given number of grasp candidates from from the given
         camera data. When implementing this class it needs to set the self._best_grasp,
         self._camera_data and self._grasp_poses properties of its instance accordingly.
@@ -63,18 +49,14 @@ class BaseGraspPlanner(object):
         raise NotImplementedError()
 
     @property
-    def grasp_poses(self) -> List[Grasp6D]:
+    def grasp_poses(self) -> List[Grasp]:
         return self._grasp_poses
 
     @property
     def best_grasp(self):
         if self._grasp_poses is None:
             return None
-        best_grasp = self._grasp_poses[0]
-        for grasp in self._grasp_poses:
-            if grasp.score > best_grasp.score:
-                best_grasp = grasp
-        return best_grasp
+        return max(self._grasp_poses, key=lambda x: x.score)
 
     @property
     def camera_data(self):
