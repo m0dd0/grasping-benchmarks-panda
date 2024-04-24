@@ -8,16 +8,15 @@ import warnings
 import yaml
 
 import numpy as np
-from grasping_benchmarks.base.base_grasp_planner import BaseGraspPlanner, CameraData
+from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
 from grasping_benchmarks.base.grasp import Grasp6D
-import superquadric_bindings  as sb
+import superquadric_bindings as sb
 from grasping_benchmarks.base import transformations as tr
 
 
 class SuperquadricsGraspPlanner(BaseGraspPlanner):
-    """Superquadric-based grasp planner
+    """Superquadric-based grasp planner"""
 
-    """
     def __init__(self, cfg_file="cfg/config_panda.yaml", grasp_offset=np.zeros(3)):
         """
         Parameters
@@ -38,12 +37,16 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
 
         super(SuperquadricsGraspPlanner, self).__init__(self.cfg)
 
-        self._robot = self.cfg['robot']['name']
-        if self._robot[-3:] == 'Sim' or self._robot[-3:] == 'sim':
+        self._robot = self.cfg["robot"]["name"]
+        if self._robot[-3:] == "Sim" or self._robot[-3:] == "sim":
             pass  # TODO something
 
-        self._icub_base_T_robot_base = np.array(self.cfg['robot']['icub_base_T_robot_base'])
-        self._icub_hand_T_robot_hand = np.array(self.cfg['robot']['icub_hand_T_robot_hand'])
+        self._icub_base_T_robot_base = np.array(
+            self.cfg["robot"]["icub_base_T_robot_base"]
+        )
+        self._icub_hand_T_robot_hand = np.array(
+            self.cfg["robot"]["icub_hand_T_robot_hand"]
+        )
 
         self._pointcloud = sb.PointCloud()
         self._superqs = sb.vector_superquadric()
@@ -58,22 +61,38 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
     def configure(self, cfg):
 
         # ------ Set Superquadric Model parameters ------ #
-        self._sq_estimator.SetNumericValue("tol", cfg['sq_model']['tol'])
+        self._sq_estimator.SetNumericValue("tol", cfg["sq_model"]["tol"])
         self._sq_estimator.SetIntegerValue("print_level", 0)
-        self._sq_estimator.SetIntegerValue("optimizer_points", cfg['sq_model']['optimizer_points'])
-        self._sq_estimator.SetBoolValue("random_sampling", cfg['sq_model']['random_sampling'])
+        self._sq_estimator.SetIntegerValue(
+            "optimizer_points", cfg["sq_model"]["optimizer_points"]
+        )
+        self._sq_estimator.SetBoolValue(
+            "random_sampling", cfg["sq_model"]["random_sampling"]
+        )
 
         # ------ Set Superquadric Grasp parameters ------ #
         self._grasp_estimator.SetIntegerValue("print_level", 0)
-        self._grasp_estimator.SetNumericValue("tol", cfg['sq_grasp']['tol'])
-        self._grasp_estimator.SetIntegerValue("max_superq", cfg['sq_grasp']['max_superq'])
-        self._grasp_estimator.SetNumericValue("constr_tol", cfg['sq_grasp']['constr_tol'])
-        self._grasp_estimator.SetStringValue("left_or_right", cfg['sq_grasp']['hand'])
-        self._grasp_estimator.setVector("plane", np.array(cfg['sq_grasp']['plane_table']))
-        self._grasp_estimator.setVector("displacement", np.array(cfg['sq_grasp']['displacement']))
-        self._grasp_estimator.setVector("hand", np.array(cfg['sq_grasp']['hand_sq']))
-        self._grasp_estimator.setMatrix("bounds_right", np.array(cfg['sq_grasp']['bounds_right']))
-        self._grasp_estimator.setMatrix("bounds_left", np.array(cfg['sq_grasp']['bounds_left']))
+        self._grasp_estimator.SetNumericValue("tol", cfg["sq_grasp"]["tol"])
+        self._grasp_estimator.SetIntegerValue(
+            "max_superq", cfg["sq_grasp"]["max_superq"]
+        )
+        self._grasp_estimator.SetNumericValue(
+            "constr_tol", cfg["sq_grasp"]["constr_tol"]
+        )
+        self._grasp_estimator.SetStringValue("left_or_right", cfg["sq_grasp"]["hand"])
+        self._grasp_estimator.setVector(
+            "plane", np.array(cfg["sq_grasp"]["plane_table"])
+        )
+        self._grasp_estimator.setVector(
+            "displacement", np.array(cfg["sq_grasp"]["displacement"])
+        )
+        self._grasp_estimator.setVector("hand", np.array(cfg["sq_grasp"]["hand_sq"]))
+        self._grasp_estimator.setMatrix(
+            "bounds_right", np.array(cfg["sq_grasp"]["bounds_right"])
+        )
+        self._grasp_estimator.setMatrix(
+            "bounds_left", np.array(cfg["sq_grasp"]["bounds_left"])
+        )
 
     def reset(self):
         self.grasp_poses = []
@@ -84,9 +103,15 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
         self._superqs = sb.vector_superquadric()
         self._grasp_res = sb.GraspResults()
 
-
-    def create_camera_data(self, pointcloud: np.ndarray, cam_pos: np.ndarray, cam_quat: np.ndarray, colors= np.ndarray(shape=(0,)), cam_frame="camera_link"):
-        """ Create the CameraData object in the right format expected by the superquadric-based grasp planner
+    def create_camera_data(
+        self,
+        pointcloud: np.ndarray,
+        cam_pos: np.ndarray,
+        cam_quat: np.ndarray,
+        colors=np.ndarray(shape=(0,)),
+        cam_frame="camera_link",
+    ):
+        """Create the CameraData object in the right format expected by the superquadric-based grasp planner
 
         Parameters
         ---------
@@ -124,7 +149,7 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
 
         for i in range(0, pointcloud.shape[0]):
 
-            pt = np.array([pointcloud[i,0], pointcloud[i,1], pointcloud[i,2]])
+            pt = np.array([pointcloud[i, 0], pointcloud[i, 1], pointcloud[i, 2]])
 
             icub_pt = icub_T_cam.dot(np.append(pt, 1))
             if np.isnan(icub_pt[0]):
@@ -138,29 +163,27 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
                 else:
                     col = [int(c) for c in col]
             else:
-                col = [255,255,0]
+                col = [255, 255, 0]
 
             sb_points.push_back(icub_pt[:3])
             sb_colors.push_back(col)
 
-
-        if sb_points.size() >= self.cfg['sq_model']['minimum_points']:
+        if sb_points.size() >= self.cfg["sq_model"]["minimum_points"]:
             self._pointcloud.setPoints(sb_points)
             self._pointcloud.setColors(sb_colors)
         else:
             warnings.warn("Not enough points in the pointcloud")
-
 
         self._camera_data.pc_img = self._pointcloud
 
         # ------------------- #
         # --- camera info --- #
         # ------------------- #
-        self._camera_data.extrinsic_params['position'] = cam_pos
-        self._camera_data.extrinsic_params['rotation'] = robot_R_cam
-        
+        self._camera_data.extrinsic_params["position"] = cam_pos
+        self._camera_data.extrinsic_params["rotation"] = robot_R_cam
+
         self._camera_data.intrinsic_params = {}
-        self._camera_data.intrinsic_params['cam_frame'] = cam_frame
+        self._camera_data.intrinsic_params["cam_frame"] = cam_frame
 
         return self._camera_data
 
@@ -178,7 +201,9 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
         ok = self._compute_superquadric(camera_data)
 
         if not ok:
-            warnings.warn("Impossible to compute a superquadric model of the given pointcloud")
+            warnings.warn(
+                "Impossible to compute a superquadric model of the given pointcloud"
+            )
             return False
 
         # -------------------------- #
@@ -196,10 +221,9 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
         return True
 
     def visualize(self):
-        """Plot the pointcloud, superquadric and grasp poses
-        """
+        """Plot the pointcloud, superquadric and grasp poses"""
 
-        del  self._visualizer
+        del self._visualizer
         self._visualizer = sb.Visualizer()
 
         self._visualizer.resetPoints()
@@ -225,18 +249,30 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
 
             # Express the sq pose wrt the robot base, instead of the icub base
             quat_sq = tr.axis_angle_to_quaternion(
-                (sq.axisangle[0][0], sq.axisangle[1][0], sq.axisangle[2][0], sq.axisangle[3][0]))
+                (
+                    sq.axisangle[0][0],
+                    sq.axisangle[1][0],
+                    sq.axisangle[2][0],
+                    sq.axisangle[3][0],
+                )
+            )
             pos_sq = [sq.center[0][0], sq.center[1][0], sq.center[2][0]]
 
             robot_base_T_icub_base = np.linalg.inv(self._icub_base_T_robot_base)
 
             icub_base_T_icub_sq = np.eye(4)
             icub_base_R_icub_sq = tr.quaternion_to_matrix(quat_sq)
-            icub_base_T_icub_sq[:3] = np.append(icub_base_R_icub_sq, np.array([pos_sq]).T, axis=1)
+            icub_base_T_icub_sq[:3] = np.append(
+                icub_base_R_icub_sq, np.array([pos_sq]).T, axis=1
+            )
 
-            robot_base_T_icub_sq = np.matmul(robot_base_T_icub_base, icub_base_T_icub_sq)
+            robot_base_T_icub_sq = np.matmul(
+                robot_base_T_icub_base, icub_base_T_icub_sq
+            )
 
-            vec_aa_sq = tr.quaternion_to_axis_angle(tr.matrix_to_quaternion(robot_base_T_icub_sq[:3, :3]))
+            vec_aa_sq = tr.quaternion_to_axis_angle(
+                tr.matrix_to_quaternion(robot_base_T_icub_sq[:3, :3])
+            )
 
             sq_out[i].setSuperqOrientation(vec_aa_sq)
             sq_out[i].setSuperqCenter(robot_base_T_icub_sq[:3, 3])
@@ -244,7 +280,7 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
         return sq_out
 
     def _compute_icub_base_T_robot_base(self):
-        """ Compute the transformation from the robot base to the icub base
+        """Compute the transformation from the robot base to the icub base
 
          We suppose the robot base frame has x pointing forward, y to the left, z upward.
          The superquadric planner considers as reference the icub base frame, which has x pointing backward and y to the right.
@@ -256,28 +292,38 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
 
         """
 
-        if self._robot[:5] == 'icub' or self._robot[:5] == 'iCub':
+        if self._robot[:5] == "icub" or self._robot[:5] == "iCub":
             self._icub_base_T_robot_base = np.eye(4)
 
         else:
             # rotation of pi/2 around z
-            icub_quat_robot = np.array([0., 0., 1., 0.])
+            icub_quat_robot = np.array([0.0, 0.0, 1.0, 0.0])
 
             self._icub_base_T_robot_base = np.eye(4)
             icub_R_robot = tr.quaternion_to_matrix(icub_quat_robot)
-            self._icub_base_T_robot_base[:3] = np.append(icub_R_robot, np.array([0., 0., 0.]).T, axis=1)
+            self._icub_base_T_robot_base[:3] = np.append(
+                icub_R_robot, np.array([0.0, 0.0, 0.0]).T, axis=1
+            )
 
         return self._icub_base_T_robot_base
 
     def _compute_superquadric(self, camera_data):
         # Check point cloud validity
-        if camera_data.pc_img.getNumberPoints() < self.cfg['sq_model']['minimum_points']:
-            print("the point cloud is unvalid. Only {} points."
-                  .format(camera_data.pc_img.getNumberPoints()))
+        if (
+            camera_data.pc_img.getNumberPoints()
+            < self.cfg["sq_model"]["minimum_points"]
+        ):
+            print(
+                "the point cloud is unvalid. Only {} points.".format(
+                    camera_data.pc_img.getNumberPoints()
+                )
+            )
             return False
 
         # Compute superquadrics
-        self._superqs = sb.vector_superquadric(self._sq_estimator.computeSuperq(camera_data.pc_img))
+        self._superqs = sb.vector_superquadric(
+            self._sq_estimator.computeSuperq(camera_data.pc_img)
+        )
 
         return np.size(self._superqs, 0) >= 0
 
@@ -295,7 +341,10 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
             return False
 
         gp = self._grasp_res.grasp_poses[0]
-        if np.linalg.norm((gp.position[0][0], gp.position[0][1], gp.position[0][2])) == 0.:
+        if (
+            np.linalg.norm((gp.position[0][0], gp.position[0][1], gp.position[0][2]))
+            == 0.0
+        ):
             return False
 
         # --- Estimate pose cost --- #
@@ -321,7 +370,7 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
             grasp_6d.position = robot_base_T_robot_gp[:3, 3]
             grasp_6d.rotation = robot_base_T_robot_gp[:3, :3]
             grasp_6d.width = 0.0
-            grasp_6d.ref_frame = 'panda_link0'
+            grasp_6d.ref_frame = "panda_link0"
             grasp_6d.score = gp.cost
 
             self._grasp_poses.append(grasp_6d)
@@ -336,13 +385,21 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
 
         robot_base_T_icub_base = np.linalg.inv(self._icub_base_T_robot_base)
 
-        icub_gp_ax = [gp.axisangle[0][0], gp.axisangle[0][1], gp.axisangle[0][2],
-                      gp.axisangle[0][3]]
+        icub_gp_ax = [
+            gp.axisangle[0][0],
+            gp.axisangle[0][1],
+            gp.axisangle[0][2],
+            gp.axisangle[0][3],
+        ]
         icub_gp_pos = [gp.position[0][0], gp.position[0][1], gp.position[0][2]]
 
         icub_base_T_icub_gp = np.eye(4)
-        icub_base_R_icub_gp = tr.quaternion_to_matrix(tr.axis_angle_to_quaternion(icub_gp_ax))
-        icub_base_T_icub_gp[:3] = np.append(icub_base_R_icub_gp, np.array([icub_gp_pos]).T, axis=1)
+        icub_base_R_icub_gp = tr.quaternion_to_matrix(
+            tr.axis_angle_to_quaternion(icub_gp_ax)
+        )
+        icub_base_T_icub_gp[:3] = np.append(
+            icub_base_R_icub_gp, np.array([icub_gp_pos]).T, axis=1
+        )
 
         robot_base_T_icub_gp = np.matmul(robot_base_T_icub_base, icub_base_T_icub_gp)
         icub_gp_T_panda_gp = np.eye(4)
@@ -350,7 +407,9 @@ class SuperquadricsGraspPlanner(BaseGraspPlanner):
         icub_gp_T_panda_gp[:3, 3] = self._grasp_offset
 
         # --- transform grasp pose from icub hand ref frame to robot hand ref frame --- #
-        robot_base_T_robot_gp = np.matmul(robot_base_T_icub_gp, self._icub_hand_T_robot_hand)
+        robot_base_T_robot_gp = np.matmul(
+            robot_base_T_icub_gp, self._icub_hand_T_robot_hand
+        )
         robot_base_T_robot_gp1 = np.matmul(robot_base_T_robot_gp, icub_gp_T_panda_gp)
 
         return robot_base_T_robot_gp1

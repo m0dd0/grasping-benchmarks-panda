@@ -59,7 +59,7 @@ from gqcnn.grasping import (
 from gqcnn.utils import GripperMode, NoValidGraspsException
 
 from grasping_benchmarks.base import transformations
-from grasping_benchmarks.base.base_grasp_planner import BaseGraspPlanner, CameraData
+from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
 from grasping_benchmarks.base.grasp import Grasp6D
 
 
@@ -201,7 +201,6 @@ class DexnetGraspPlanner(BaseGraspPlanner):
         seg_mask: np.ndarray = np.empty(shape=(0,)),
         bbox: tuple = (),
     ):
-
         """Create the CameraData object in the correct format expected by gqcnn
 
         Parameters

@@ -25,15 +25,23 @@ from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs import point_cloud2 as pc2
 
-from grasping_benchmarks.base.transformations import quaternion_to_matrix, matrix_to_quaternion
-from grasping_benchmarks.base.base_grasp_planner import CameraData
-from grasping_benchmarks_ros.srv import GraspPlanner, GraspPlannerRequest, GraspPlannerResponse
+from grasping_benchmarks.base.transformations import (
+    quaternion_to_matrix,
+    matrix_to_quaternion,
+)
+from grasping_benchmarks.base.grasp_planner_base import CameraData
+from grasping_benchmarks_ros.srv import (
+    GraspPlanner,
+    GraspPlannerRequest,
+    GraspPlannerResponse,
+)
 from grasping_benchmarks_ros.msg import BenchmarkGrasp
 from grasping_benchmarks.graspnet.graspnet_grasp_planner import GraspNetGraspPlanner
 
+
 class VisuMutex:
-    """Simple class to synchronize threads on whether to display stuff or not
-    """
+    """Simple class to synchronize threads on whether to display stuff or not"""
+
     def __init__(self):
         self._mutex = Lock()
         self._ready_to_visu = False
@@ -42,19 +50,28 @@ class VisuMutex:
     def isReady(self):
         return self._ready_to_visu
 
-    def setReadyState(self, state : bool):
+    def setReadyState(self, state: bool):
         self._mutex.acquire()
         try:
             self._ready_to_visu = state
         finally:
             self._mutex.release()
 
+
 DEBUG = False
 
 visualization_mutex = VisuMutex()
 
+
 class GraspnetGraspPlannerService(GraspNetGraspPlanner):
-    def __init__(self, cfg_file : str, cv_bridge : CvBridge, grasp_offset : np.array, grasp_service_name : str, grasp_publisher_name : str):
+    def __init__(
+        self,
+        cfg_file: str,
+        cv_bridge: CvBridge,
+        grasp_offset: np.array,
+        grasp_service_name: str,
+        grasp_publisher_name: str,
+    ):
         """Constructor
 
         Parameters
@@ -78,14 +95,16 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         # Create publisher to publish pose of final grasp.
         self.grasp_pose_publisher = None
         if grasp_publisher_name is not None:
-            self.grasp_pose_publisher = rospy.Publisher(grasp_publisher_name, PoseStamped, queue_size=10)
+            self.grasp_pose_publisher = rospy.Publisher(
+                grasp_publisher_name, PoseStamped, queue_size=10
+            )
 
         # Initialize the ROS grasp planning service.
-        self._grasp_planning_service = rospy.Service(grasp_service_name, GraspPlanner,
-                                            self.plan_grasp_handler)
+        self._grasp_planning_service = rospy.Service(
+            grasp_service_name, GraspPlanner, self.plan_grasp_handler
+        )
 
-
-    def read_images(self, req : GraspPlannerRequest):
+    def read_images(self, req: GraspPlannerRequest):
         """Read images as a CameraData class from a service request
 
         Parameters
@@ -98,9 +117,13 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         camera_info = req.camera_info
         viewpoint = req.view_point
         try:
-            cv2_color = self.cv_bridge.imgmsg_to_cv2(req.color_image, desired_encoding='rgb8')
+            cv2_color = self.cv_bridge.imgmsg_to_cv2(
+                req.color_image, desired_encoding="rgb8"
+            )
 
-            raw_depth = self.cv_bridge.imgmsg_to_cv2(req.depth_image, desired_encoding='passthrough')
+            raw_depth = self.cv_bridge.imgmsg_to_cv2(
+                req.depth_image, desired_encoding="passthrough"
+            )
             cv2_depth = np.array(raw_depth, dtype=np.float32)
 
             cv2_depth *= 0.001
@@ -113,11 +136,15 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
             rospy.logerr(cv_bridge_exception)
 
         # Check for image and depth size
-        if (cv2_color.shape[0] != cv2_depth.shape[0]) or (cv2_color.shape[1] != cv2_depth.shape[1]):
-            msg = "Mismatch between depth shape {}x{} and color shape {}x{}".format(cv2_depth.shape[0],
-                                                                                    cv2_depth.shape[1],
-                                                                                    cv2_color.shape[0],
-                                                                                    cv2_color.shape[1])
+        if (cv2_color.shape[0] != cv2_depth.shape[0]) or (
+            cv2_color.shape[1] != cv2_depth.shape[1]
+        ):
+            msg = "Mismatch between depth shape {}x{} and color shape {}x{}".format(
+                cv2_depth.shape[0],
+                cv2_depth.shape[1],
+                cv2_color.shape[0],
+                cv2_color.shape[1],
+            )
             rospy.logerr(msg)
             raise rospy.ServiceException(msg)
 
@@ -126,53 +153,69 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         #     [fx  0 cx]
         # K = [ 0 fy cy]
         #     [ 0  0  1]
-        camera_position = np.array([viewpoint.pose.position.x,
-                                    viewpoint.pose.position.y,
-                                    viewpoint.pose.position.z])
-        camera_orientation = quaternion_to_matrix([viewpoint.pose.orientation.x,
-                                           viewpoint.pose.orientation.y,
-                                           viewpoint.pose.orientation.z,
-                                           viewpoint.pose.orientation.w])
+        camera_position = np.array(
+            [
+                viewpoint.pose.position.x,
+                viewpoint.pose.position.y,
+                viewpoint.pose.position.z,
+            ]
+        )
+        camera_orientation = quaternion_to_matrix(
+            [
+                viewpoint.pose.orientation.x,
+                viewpoint.pose.orientation.y,
+                viewpoint.pose.orientation.z,
+                viewpoint.pose.orientation.w,
+            ]
+        )
         camera_extrinsic_matrix = np.eye(4)
-        camera_extrinsic_matrix[:3,:3] = camera_orientation
-        camera_extrinsic_matrix[:3,3] = camera_position
+        camera_extrinsic_matrix[:3, :3] = camera_orientation
+        camera_extrinsic_matrix[:3, 3] = camera_position
 
         #  If available, get the object point cloud and transform it in the
         #  camera ref frame
         obj_cloud = self.npy_from_pc2(req.cloud)[0]
-        obj_cloud = self.transform_pc_to_camera_frame(obj_cloud, camera_extrinsic_matrix) if obj_cloud is not None else None
+        obj_cloud = (
+            self.transform_pc_to_camera_frame(obj_cloud, camera_extrinsic_matrix)
+            if obj_cloud is not None
+            else None
+        )
 
-        camera_data = self.create_camera_data(rgb_image=cv2_color,
-                                              depth_image=cv2_depth,
-                                              cam_intrinsic_frame=camera_info.header.frame_id,
-                                              cam_extrinsic_matrix=camera_extrinsic_matrix,
-                                              fx=camera_info.K[0],
-                                              fy=camera_info.K[4],
-                                              cx=camera_info.K[2],
-                                              cy=camera_info.K[5],
-                                              skew=0.0,
-                                              w=camera_info.width,
-                                              h=camera_info.height,
-                                              obj_cloud=obj_cloud)
+        camera_data = self.create_camera_data(
+            rgb_image=cv2_color,
+            depth_image=cv2_depth,
+            cam_intrinsic_frame=camera_info.header.frame_id,
+            cam_extrinsic_matrix=camera_extrinsic_matrix,
+            fx=camera_info.K[0],
+            fy=camera_info.K[4],
+            cx=camera_info.K[2],
+            cy=camera_info.K[5],
+            skew=0.0,
+            w=camera_info.width,
+            h=camera_info.height,
+            obj_cloud=obj_cloud,
+        )
 
         return camera_data
 
-    def read_aruco_board(self, req : GraspPlannerRequest):
+    def read_aruco_board(self, req: GraspPlannerRequest):
 
-        aruco_board_data = self.create_aruco_board_data(req.aruco_board.position, req.aruco_board.orientation, req.grasp_filter_flag)
-   
+        aruco_board_data = self.create_aruco_board_data(
+            req.aruco_board.position, req.aruco_board.orientation, req.grasp_filter_flag
+        )
+
         return aruco_board_data
 
-    def plan_grasp_handler(self, req : GraspPlannerRequest) -> GraspPlannerResponse:
+    def plan_grasp_handler(self, req: GraspPlannerRequest) -> GraspPlannerResponse:
 
         # Read camera images from the request
         camera_data = self.read_images(req)
-        aruco_board_data = self.read_aruco_board(req)        
+        aruco_board_data = self.read_aruco_board(req)
 
         # Set number of candidates
         n_of_candidates = req.n_of_candidates if req.n_of_candidates else 1
 
-        ok = self.plan_grasp(camera_data,aruco_board_data ,n_of_candidates)
+        ok = self.plan_grasp(camera_data, aruco_board_data, n_of_candidates)
         if ok:
             # Communicate to main thread that we are ready to visu
             visualization_mutex.setReadyState(True)
@@ -181,7 +224,9 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         else:
             return GraspPlannerResponse()
 
-    def transform_pc_to_camera_frame(self, pc : np.ndarray, camera_pose : np.ndarray) -> np.ndarray:
+    def transform_pc_to_camera_frame(
+        self, pc: np.ndarray, camera_pose: np.ndarray
+    ) -> np.ndarray:
         """Transform the point cloud from root to camera reference frame
 
         Parameters
@@ -211,7 +256,9 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
 
         return cam_pc[:, :-1]
 
-    def transform_grasp_to_world(self, grasp_pose : PoseStamped, camera_viewpoint : PoseStamped) -> PoseStamped:
+    def transform_grasp_to_world(
+        self, grasp_pose: PoseStamped, camera_viewpoint: PoseStamped
+    ) -> PoseStamped:
         """Transform the 6D grasp pose in the world reference frame, given the
         camera viewpoint
 
@@ -236,20 +283,18 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         grasp_quat = grasp_pose.pose.orientation
         grasp_pos = grasp_pose.pose.position
         cam_T_grasp = np.eye(4)
-        cam_T_grasp[:3,:3] = quaternion_to_matrix([grasp_quat.x,
-                                                   grasp_quat.y,
-                                                   grasp_quat.z,
-                                                   grasp_quat.w])
-        cam_T_grasp[:3,3] = np.array([grasp_pos.x, grasp_pos.y, grasp_pos.z])
+        cam_T_grasp[:3, :3] = quaternion_to_matrix(
+            [grasp_quat.x, grasp_quat.y, grasp_quat.z, grasp_quat.w]
+        )
+        cam_T_grasp[:3, 3] = np.array([grasp_pos.x, grasp_pos.y, grasp_pos.z])
 
         cam_quat = camera_viewpoint.pose.orientation
         cam_pos = camera_viewpoint.pose.position
         w_T_cam = np.eye(4)
-        w_T_cam[:3,:3] = quaternion_to_matrix([cam_quat.x,
-                                               cam_quat.y,
-                                               cam_quat.z,
-                                               cam_quat.w])
-        w_T_cam[:3,3] = np.array([cam_pos.x, cam_pos.y, cam_pos.z])
+        w_T_cam[:3, :3] = quaternion_to_matrix(
+            [cam_quat.x, cam_quat.y, cam_quat.z, cam_quat.w]
+        )
+        w_T_cam[:3, 3] = np.array([cam_pos.x, cam_pos.y, cam_pos.z])
 
         # Obtain the w_T_grasp affine transformation
         w_T_grasp = np.matmul(w_T_cam, cam_T_grasp)
@@ -260,17 +305,16 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
             print("cam_T_grasp\n ", cam_T_grasp)
             print("w_T_grasp\n ", w_T_grasp)
 
-
         # Create and return a StampedPose object
-        w_T_grasp_quat = matrix_to_quaternion(w_T_grasp[:3,:3])
+        w_T_grasp_quat = matrix_to_quaternion(w_T_grasp[:3, :3])
         result_pose = PoseStamped()
         result_pose.pose.orientation.x = w_T_grasp_quat[0]
         result_pose.pose.orientation.y = w_T_grasp_quat[1]
         result_pose.pose.orientation.z = w_T_grasp_quat[2]
         result_pose.pose.orientation.w = w_T_grasp_quat[3]
-        result_pose.pose.position.x = w_T_grasp[0,3]
-        result_pose.pose.position.y = w_T_grasp[1,3]
-        result_pose.pose.position.z = w_T_grasp[2,3]
+        result_pose.pose.position.x = w_T_grasp[0, 3]
+        result_pose.pose.position.y = w_T_grasp[1, 3]
+        result_pose.pose.position.z = w_T_grasp[2, 3]
         result_pose.header = camera_viewpoint.header
 
         return result_pose
@@ -315,8 +359,7 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
 
         return response
 
-
-    def npy_from_pc2(self, pc : PointCloud2) -> Tuple[np.ndarray, np.ndarray]:
+    def npy_from_pc2(self, pc: PointCloud2) -> Tuple[np.ndarray, np.ndarray]:
         """Conversion from PointCloud2 to a numpy format
         Parameters
         ----------
@@ -337,11 +380,17 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
 
         # Decode r,g,b
         pc_data_rgb_split = ros_numpy.point_cloud2.split_rgb_field(pc_data)
-        points_rgb = np.column_stack((pc_data_rgb_split['r'], pc_data_rgb_split['g'], pc_data_rgb_split['b']))
+        points_rgb = np.column_stack(
+            (pc_data_rgb_split["r"], pc_data_rgb_split["g"], pc_data_rgb_split["b"])
+        )
 
         # Find NaNs and get remove their indexes
-        valid_point_indexes = np.argwhere(np.invert(np.bitwise_or.reduce(np.isnan(points_xyz), axis=1)))
-        valid_point_indexes = np.reshape(valid_point_indexes, valid_point_indexes.shape[0])
+        valid_point_indexes = np.argwhere(
+            np.invert(np.bitwise_or.reduce(np.isnan(points_xyz), axis=1))
+        )
+        valid_point_indexes = np.reshape(
+            valid_point_indexes, valid_point_indexes.shape[0]
+        )
 
         return points_xyz[valid_point_indexes], points_rgb[valid_point_indexes]
 
@@ -363,22 +412,19 @@ if __name__ == "__main__":
     visualize_grasp = rospy.get_param("~visualize_grasp", False)
 
     # Initialize the grasp planner service
-    grasp_planner = GraspnetGraspPlannerService(cfg_file=cfg_file,
-                                                cv_bridge=cv_bridge,
-                                                grasp_offset=grasp_offset,
-                                                grasp_service_name=grasp_service_name,
-                                                grasp_publisher_name=grasp_publisher_name)
+    grasp_planner = GraspnetGraspPlannerService(
+        cfg_file=cfg_file,
+        cv_bridge=cv_bridge,
+        grasp_offset=grasp_offset,
+        grasp_service_name=grasp_service_name,
+        grasp_publisher_name=grasp_publisher_name,
+    )
 
     rospy.loginfo("Grasping Policy Initiated")
 
     # Visualization needs to be called from the main thread with mayavi
-    while(not rospy.is_shutdown()):
+    while not rospy.is_shutdown():
         if visualization_mutex.isReady and visualize_grasp:
             visualization_mutex.setReadyState(False)
             grasp_planner.visualize(visualize_all=False)
         rospy.sleep(1)
-
-
-
-
-
