@@ -21,7 +21,6 @@ setuptools.setup(
     install_requires=[
         "numpy",
         "ros_numpy @ git+https://github.com/m0dd0/ros_numpy@master",  # the original version is outdated and does not support new version of numpy
-        "nptyping",
     ],
     extras_require={
         "dev": ["black", "pylint", "notebook"],
@@ -33,7 +32,6 @@ setuptools.setup(
             "rosnumpy",
             "scipy",
             "torch",
-            "nptyping",
             "Pillow",
             "rospkg",
             # TODO check if https://github.com/m0dd0/GrConvNetBenchmark.git can be installed from here
