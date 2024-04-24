@@ -1,11 +1,14 @@
-from typing import TypeVar, Generic
-import numpy as np
+# typing with this style is only possible for python >= 3.9
+# since some algorithms need a lower version of python, we can't use this typing style
 
-Shape = TypeVar("Shape")
-DType = TypeVar("DType")
+# from typing import TypeVar, Generic
+# import numpy as np
+
+# Shape = TypeVar("Shape")
+# DType = TypeVar("DType")
 
 
-class NpArray(np.ndarray, Generic[Shape, DType]):
-    """Use this to type-annotate numpy arrays, e.g. image: NpArray['H,W,3', np.uint8].
-    Removes the strictness of the nptyping.NDArray type, which is too strict for our purposes.
-    """
+# class NpArray(np.ndarray, Generic[Shape, DType]):
+#     """Use this to type-annotate numpy arrays, e.g. image: NpArray['H,W,3', np.uint8].
+#     Removes the strictness of the nptyping.NDArray type, which is too strict for our purposes.
+#     """
