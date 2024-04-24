@@ -4,9 +4,11 @@
 
 from typing import Dict, List
 from abc import abstractmethod
+from dataclasses import dataclass
 
 import numpy as np
-from nptyping import NDArray, Float, Shape, UInt8, UInt16
+
+from grasping_benchmarks.base.typing import NpArray
 
 ROS_AVAILABLE = True
 try:
@@ -18,55 +20,38 @@ except ImportError as e:
 from .grasp import Grasp6D
 
 
+def service_request_to_camera_data(req: "GraspPlannerRequest"):
+    rgb = ros_numpy.numpify(req.color_image)
+    depth = ros_numpy.numpify(req.depth_image)
+    seg = ros_numpy.numpify(req.seg_image)
+
+    pc = ros_numpy.numpify(req.cloud)
+
+    camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
+
+    # 4x4 homogenous tranformation matrix
+    camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
+
+    camera_data = CameraData(
+        rgb,
+        depth,
+        pc,  # TODO check format and convert if needed
+        seg,
+        camera_matrix,
+        camera_trafo_h[:3, 3],
+        camera_trafo_h[:3, :3],
+    )
+
+
+@dataclass
 class CameraData:
-    @classmethod
-    def from_grasp_planner_request(cls, req: "GraspPlannerRequest"):
-        if not ROS_AVAILABLE:
-            raise ImportError("ROS GraspPlannerService is not available.")
-
-        rgb = ros_numpy.numpify(req.color_image)
-        depth = ros_numpy.numpify(req.depth_image)
-        seg = ros_numpy.numpify(req.seg_image)
-
-        pc = ros_numpy.numpify(req.cloud)
-
-        camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
-
-        # 4x4 homogenous tranformation matrix
-        camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
-
-        camera_data = CameraData(
-            rgb,
-            depth,
-            pc,  # TODO check format and convert if needed
-            seg,
-            None,  # bounding box is not included in the request
-            camera_matrix,
-            camera_trafo_h[:3, 3],
-            camera_trafo_h[:3, :3],
-        )
-
-        return camera_data
-
-    def __init__(
-        self,
-        rgb_img: NDArray[Shape["H, W, 3"], UInt8] = None,  # rgb_img
-        depth_img: NDArray[Shape["H, W"], UInt16] = None,  # depth_img in mm
-        pointcloud: NDArray[Shape["N, 3"], Float] = None,  # pc_image
-        seg_img: NDArray[Shape["H, W"], UInt8] = None,  # seg_image
-        bounding_box=None,  # TODO
-        cam_intrinsics: NDArray[Shape["3, 3"], Float] = None,
-        cam_pos: NDArray[Shape["3"], Float] = None,
-        cam_rot: NDArray[Shape["3, 3"], Float] = None,
-    ):
-        self.rgb_img = rgb_img
-        self.depth_img = depth_img
-        self.pointcloud = pointcloud
-        self.seg_img = seg_img
-        self.bounding_box = bounding_box
-        self.cam_intrinsics = cam_intrinsics
-        self.cam_pos = cam_pos
-        self.cam_rot = cam_rot
+    rgb_img: NpArray["H, W, 3", np.uint8] = None
+    depth_img: NpArray["H, W", np.uint16] = None
+    pointcloud: NpArray["N, 3", np.float32] = None
+    seg_img: NpArray["H, W", np.uint8] = None
+    cam_intrinsics: NpArray["3, 3", np.float32] = None
+    cam_pos: NpArray["3", np.float32] = None
+    cam_rot: NpArray["3, 3", np.float32] = None
 
 
 class BaseGraspPlanner(object):

@@ -3,11 +3,9 @@ from typing import List, Dict
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
 
 from se3dif.models.loader import load_model
-from se3dif.samplers import ApproximatedGrasp_AnnealedLD, Grasp_AnnealedLD
+from se3dif.samplers import Grasp_AnnealedLD
 from se3dif.utils import to_numpy, to_torch
 from se3dif.visualization import create_gripper_marker
-
-import trimesh
 
 
 class Se3DifGraspPlanner(BaseGraspPlanner):
@@ -32,7 +30,7 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             device=self.cfg["device"],
         )
 
-    def plan_grasp(
+    def plan_grasps(
         self, camera_data: CameraData, n_candidates: int = 1
     ) -> List[Grasp6D]:
         """Computes the given number of grasp candidates from from the given

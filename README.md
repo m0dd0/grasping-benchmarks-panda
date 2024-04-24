@@ -64,8 +64,8 @@ The goal of this Repo is to provide a unified interface for multiple grasp plann
 For this reason, we define a common ROS message for the grasp requests and a common ROS service for the grasp planning algorithms.
 Also python base classes are provided that should be used to implement the wrappers for the algorithms.
 So if you want to add a new algorithm to this repo you should:
-- first subclass `BaseGraspPlanner` and implement the abstract `plan_grasps` method and optionally the `__init__` method.
-- write a ROS service which uses your subclass of `BaseGraspPlanner` to plan grasps.
+- first subclass `BaseGraspPlanner` and implement the abstract `plan_grasps` method and optionally the `visualize` method.
+- write a ROS service which uses your subclass of `BaseGraspPlanner` to plan grasps. To be consistent 
 
 ### Configuration Files
 
