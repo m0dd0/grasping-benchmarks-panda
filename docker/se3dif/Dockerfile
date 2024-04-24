@@ -97,7 +97,7 @@ RUN if [ "${IS_DEVCONTAINER_BUILD}" = "false" ]; then \
     catkin config  --extend /opt/ros/noetic && \
     catkin build && \
     cd /home/catkin_ws/src/grasping-benchmarks-panda && \
-    pip3 install -e .[contactgraspnet]; \
+    pip3 install -e .; \
     fi
 
 ENV GRASP_BENCHMARK_SE3DIF true
