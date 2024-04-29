@@ -7,7 +7,26 @@ import warnings
 
 import numpy as np
 
-# TODO: add docstrings and type hints
+# TODO refactor this
+
+
+def rotation_and_position_to_homogeneous_matrix(
+    rotation: np.ndarray, position: np.ndarray
+):
+    """Transform rotation and position to homogeneous matrix
+
+    Args:
+        rotation(np.ndarray): 3x3 rotation matrix
+        position(np.ndarray): 3x1 position vector
+
+    Returns:
+        np.ndarray: 4x4 homogeneous matrix
+    """
+    homogeneous_matrix = np.eye(4)
+    homogeneous_matrix[:3, :3] = rotation
+    homogeneous_matrix[:3, 3] = position
+
+    return homogeneous_matrix
 
 
 def axis_angle_to_quaternion(vec_aa):
