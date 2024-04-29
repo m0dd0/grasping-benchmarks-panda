@@ -7,8 +7,18 @@ In the following a short description of the algorithms is given.
 ### Se3Diffusion
 https://github.com/robotgradient/grasp_diffusion
 
-#### 
-TODO
+#### Problems and Limitations
+The algorithms seems to have a significantly lower performance if only partial pointclouds are available.
+Although the original repository provides a script to operate on partial pointlclouds and there is also a model published for partial pointclouds, the performance is still significantly lower than with full pointclouds.
+The algorithm also seems be very sensitive to the size of the pointclouds.
+However there is no Documentation on how the pointclouds should be preprocessed to get the best performance.
+Therfore, the wrapper in this repository tries to scale the pointclouds so that there longest axis is approximately the size of the longest axis of the pointclouds the model was trained on.
+
+To experiment with the performance the notebooks in the `se3dif/notebooks` folder can be used.
+
+### GrConvNet
+
+### ContactGraspNet
 
 ## Docker Container
 For most algorithms a Dockerfile has been created that can be used to build a docker container which runs the corresponding ROS-service.
