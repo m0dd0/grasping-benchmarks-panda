@@ -9,6 +9,7 @@ https://github.com/robotgradient/grasp_diffusion
 
 #### Problems and Limitations
 The algorithms seems to have a significantly lower performance if only partial pointclouds are available.
+This is the case for all pointclouds that are scanned from one perspective.
 Although the original repository provides a script to operate on partial pointlclouds and there is also a model published for partial pointclouds, the performance is still significantly lower than with full pointclouds.
 The algorithm also seems be very sensitive to the size of the pointclouds.
 However there is no Documentation on how the pointclouds should be preprocessed to get the best performance.

@@ -39,8 +39,10 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             camera_data (CameraData): Contains the data to compute the grasp poses
             n_candidates (int, optional): The number of grasp candidates to compute. Defaults to 1.
         """
+        pointcloud = camera_data.pointcloud_segmented
+
         self._model.set_latent(
-            to_torch(camera_data.pointcloud[None, ...], self.cfg["device"]),
+            to_torch(pointcloud[None, ...], self.cfg["device"]),
             batch=self.cfg["batch"],
         )
 
