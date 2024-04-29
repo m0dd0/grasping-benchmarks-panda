@@ -190,7 +190,7 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
         n_of_candidates = req.n_of_candidates if req.n_of_candidates else 1
 
         self.grasp_poses = []
-        ok = self.plan_grasp(
+        ok = self.plan_grasps(
             camera_data,
             n_candidates=n_of_candidates,
             visualize_grasp=self.visualize_grasp,
@@ -222,7 +222,7 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
         }
 
         self.grasp_poses = []
-        ok = self.plan_grasp(camera_data, n_candidates=n_of_candidates)
+        ok = self.plan_grasps(camera_data, n_candidates=n_of_candidates)
 
         if ok:
             return self._create_grasp_planner_srv_msg()
@@ -274,7 +274,7 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
             raise rospy.ServiceException(msg)
 
         self.grasp_poses = []
-        ok = self.plan_grasp(camera_data, n_candidates=n_of_candidates)
+        ok = self.plan_grasps(camera_data, n_candidates=n_of_candidates)
 
         if ok:
             return self._create_grasp_planner_srv_msg()

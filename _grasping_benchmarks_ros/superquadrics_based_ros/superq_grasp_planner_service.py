@@ -130,7 +130,7 @@ class SuperquadricGraspPlannerService(SuperquadricsGraspPlanner):
         camera_data = self.read_images(req)
 
         self.grasp_poses = []
-        ok = self.plan_grasp(
+        ok = self.plan_grasps(
             camera_data, n_candidates=1, visualize_grasp=self.visualize_grasp
         )
 

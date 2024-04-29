@@ -215,7 +215,7 @@ class GraspnetGraspPlannerService(GraspNetGraspPlanner):
         # Set number of candidates
         n_of_candidates = req.n_of_candidates if req.n_of_candidates else 1
 
-        ok = self.plan_grasp(camera_data, aruco_board_data, n_of_candidates)
+        ok = self.plan_grasps(camera_data, aruco_board_data, n_of_candidates)
         if ok:
             # Communicate to main thread that we are ready to visu
             visualization_mutex.setReadyState(True)
