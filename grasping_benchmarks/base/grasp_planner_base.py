@@ -43,7 +43,9 @@ class BaseGraspPlanner(object):
         self._cfg = cfg
 
     @abstractmethod
-    def plan_grasp(self, camera_data: CameraData, n_candidates: int = 1) -> List[Grasp]:
+    def plan_grasps(
+        self, camera_data: CameraData, n_candidates: int = 1
+    ) -> List[Grasp]:
         """Computes the given number of grasp candidates from from the given
         camera data. When implementing this class it needs to set the self._best_grasp,
         self._camera_data and self._grasp_poses properties of its instance accordingly.

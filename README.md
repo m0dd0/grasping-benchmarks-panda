@@ -65,12 +65,19 @@ For this reason, we define a common ROS message for the grasp requests and a com
 Also python base classes are provided that should be used to implement the wrappers for the algorithms.
 So if you want to add a new algorithm to this repo you should:
 - first subclass `BaseGraspPlanner` and implement the abstract `plan_grasps` method and optionally the `visualize` method.
-- write a ROS service which uses your subclass of `BaseGraspPlanner` to plan grasps. To be consistent 
+
+### Shared ROS-Service
+There is an easy way to make your subclass of `BaseGraspPlanner` available as a ROS-service.
+The `GraspPlanner.srv` file defines a ROS-service that can be used to request grasps from the grasp planning algorithms.
+The service is defined in a generic way so that it can be used with any grasp planning algorithm that is implemented as a subclass of `BaseGraspPlanner`.
+You only need to add a line in the main function of `grasp_planner_service.py` that creates an instance of your subclass of `BaseGraspPlanner` based on the name of the algorithm that is requested.
+
+Note that the ROS-service node exspects that your algorithms `__init__` method accepts only the a dict of parameters as an argument so you need to make sure that your subclass of `BaseGraspPlanner` has a constructor that accepts only a dict of parameters as an argument.
 
 ### Configuration Files
-
-
-
+As mentioned above the algorithms are initialized with a dict of parameters.
+There should be at least one configuration file for each algorithm that contains the default parameters for the algorithm.
+This parameter file should be placed into a `cfg` folder in the root of the algorithm folder to be consistent with the other algorithms.
 
 
 ## Essentials from the original README

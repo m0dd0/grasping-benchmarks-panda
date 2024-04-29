@@ -51,7 +51,7 @@ class GraspPlannerService:
 
         camera_data: CameraData = service_request_to_camera_data(req)
 
-        grasps: List[Grasp] = self._planner.plan_grasp(camera_data)
+        grasps: List[Grasp] = self._planner.plan_grasps(camera_data)
 
         response = grasp_data_to_service_response(grasps)
 
