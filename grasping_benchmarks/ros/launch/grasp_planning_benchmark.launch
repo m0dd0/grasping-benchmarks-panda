@@ -1,8 +1,8 @@
 <launch>
-  <arg name="algorithm" default="se3dif" />
-  <arg name="config_file" default="" />
-  <node name="grasp_planner_node_$(arg algorithm)" pkg="grasping_benchmarks_ros" type="grasp_planner_service.py" ns="$(arg algorithm)" output="screen">
-    <param name="algorithm" value="$(arg algorithm)" />
-    <param name="config_file" value="$(arg config_file)" />
-  </node>
+  <group ns="se3dif" if="$(arg se3dif)">
+    <rosparam file="$(find grasping_benchmarks_ros)/../algorithms/se3dif/cfg/base_config.yaml"/>
+    <node name="grasp_planner_node_se3dif" pkg="grasping_benchmarks_ros" type="grasp_planner_service.py" ns="se3dif" output="screen">
+      <param name="algorithm" value="se3dif" />
+    </node>
+  </group>
 </launch>
