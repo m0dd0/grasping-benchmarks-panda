@@ -14,7 +14,7 @@ from se3dif.visualization import create_gripper_marker
 import rospy
 
 from grasping_benchmarks.base import CameraData, service_request_to_camera_data
-from grasping_benchmarks.base.grasp import Grasp6D, grasp_data_to_service_response
+from grasping_benchmarks.base.grasp import Grasp6D, grasp_to_ros_msg
 from grasping_benchmarks.se3dif import Se3DifGraspPlanner
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,
@@ -43,7 +43,10 @@ class GraspPlannerService:
 
         grasps: List[Grasp6D] = self._planner.plan_grasps(camera_data)
 
-        response = grasp_data_to_service_response(grasps)
+        response = GraspPlannerResponse()
+        response.grasp_candidates = [grasp_to_ros_msg(grasp) for grasp in grasps]
+
+        logging.info(grasps[0].position)
 
         return response
 

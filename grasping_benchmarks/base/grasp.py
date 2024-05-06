@@ -17,23 +17,22 @@ except ImportError as e:
     ROS_AVAILABLE = False
 
 
-def grasp_data_to_service_response(self) -> BenchmarkGrasp:
+def grasp_to_ros_msg(grasp) -> BenchmarkGrasp:
     grasp_msg = BenchmarkGrasp()
 
     p = PoseStamped()
-    p.header.frame_id = self.ref_frame
     p.header.stamp = rospy.Time.now()
-    p.pose.position.x = self.position[0]
-    p.pose.position.y = self.position[1]
-    p.pose.position.z = self.position[2]
-    p.pose.orientation.x = self.quaternion[0]
-    p.pose.orientation.y = self.quaternion[1]
-    p.pose.orientation.z = self.quaternion[2]
-    p.pose.orientation.w = self.quaternion[3]
+    p.pose.position.x = grasp.position[0]
+    p.pose.position.y = grasp.position[1]
+    p.pose.position.z = grasp.position[2]
+    p.pose.orientation.x = grasp.quaternion[0]
+    p.pose.orientation.y = grasp.quaternion[1]
+    p.pose.orientation.z = grasp.quaternion[2]
+    p.pose.orientation.w = grasp.quaternion[3]
     grasp_msg.pose = p
 
-    grasp_msg.score.data = self.score
-    grasp_msg.width.data = self.width
+    grasp_msg.score.data = grasp.score
+    grasp_msg.width.data = grasp.width
 
     return grasp_msg
 

@@ -1,8 +1,0 @@
-device: cuda:0
-pretrained_model: "partial_grasp_dif"
-batch: 10
-n_points: 1000
-T: 70
-T_fit: 50
-k_steps: 1
-object_target_size: 2.2 

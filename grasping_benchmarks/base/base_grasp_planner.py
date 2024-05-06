@@ -19,26 +19,24 @@ from .grasp import Grasp6D
 
 
 def service_request_to_camera_data(req: "GraspPlannerRequest"):
-    rgb = ros_numpy.numpify(req.color_image)
-    depth = ros_numpy.numpify(req.depth_image)
-    seg = ros_numpy.numpify(req.seg_image)
-
-    pc = ros_numpy.numpify(req.cloud)
-
-    camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
-
     # 4x4 homogenous tranformation matrix
     camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
 
     camera_data = CameraData(
-        rgb,
-        depth,
-        pc,  # TODO check format and convert if needed
-        seg,
-        camera_matrix,
-        camera_trafo_h[:3, 3],
-        camera_trafo_h[:3, :3],
+        rgb_img=ros_numpy.numpify(req.color_image),
+        depth_img=ros_numpy.numpify(req.depth_image),
+        pointcloud=ros_numpy.numpify(req.cloud).view(np.float32).reshape(-1, 3).copy(),
+        pointcloud_segmented=ros_numpy.numpify(req.pointcloud_segmented)
+        .view(np.float32)
+        .reshape(-1, 3)
+        .copy(),
+        seg_img=ros_numpy.numpify(req.seg_image),
+        cam_intrinsics=np.array(req.camera_info.K).reshape(3, 3),
+        cam_pos=camera_trafo_h[:3, 3],
+        cam_rot=camera_trafo_h[:3, :3],
     )
+
+    return camera_data
 
 
 @dataclass
