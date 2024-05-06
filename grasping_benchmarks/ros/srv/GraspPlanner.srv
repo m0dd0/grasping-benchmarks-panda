@@ -1,27 +1,11 @@
-# request params for grasp planners (not all of these must be filled in)
-
-# color and depth images
-sensor_msgs/Image color_image
+sensor_msgs/Image rgb_image
 sensor_msgs/Image depth_image
-sensor_msgs/Image seg_image # assumed to be binary since no segmentation id is provided
-
-# camera info and intrinsics
-sensor_msgs/CameraInfo camera_info
-
-# pointcloud
-sensor_msgs/PointCloud2 cloud # in world frame
-
-# camera parameers
-geometry_msgs/PoseStamped view_point
-
-# additional parameters
-geometry_msgs/Pose aruco_board
-bool grasp_filter_flag
-
-# number of candidates to return
-int16 n_of_candidates
+sensor_msgs/Image segmentation_image # binary segmentation
+sensor_msgs/CameraInfo camera_info # camera info and intrinsics
+sensor_msgs/PointCloud2 pointcloud # pointcloud of the scene in world frame
+geometry_msgs/PoseStamped view_point # camera intrinsics
+int16 number_of_candidates
 
 ---
 
-# response params
 BenchmarkGrasp[] grasp_candidates

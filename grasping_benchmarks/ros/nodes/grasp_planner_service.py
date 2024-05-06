@@ -119,6 +119,7 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown algorithm {algorithm_name}")
 
     # getting the config file
+    # TODO put this to ros parameter server
     config_file = rospy.get_param("~config_file")
     if not config_file:
         config_file = (
