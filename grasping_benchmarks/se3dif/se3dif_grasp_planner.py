@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp
+from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
 
 from se3dif.models.loader import load_model
 from se3dif.samplers import Grasp_AnnealedLD
@@ -31,7 +31,7 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
 
     def plan_grasps(
         self, camera_data: CameraData, n_candidates: int = 1
-    ) -> List[Grasp]:
+    ) -> List[Grasp6D]:
         """Computes the given number of grasp candidates from from the given
         camera data.
 
@@ -47,7 +47,7 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
         )
 
         grasps = [
-            Grasp(
+            Grasp6D(
                 position=H_grasp[:3, 3],
                 rotation=H_grasp[:3, :3],
             )
@@ -59,10 +59,3 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
     def visualize(self):
         """Plot the grasp poses"""
         raise NotImplementedError
-        # scene = trimesh.Scene()
-        # scene.add_geometry(self._mesh)
-
-        # for H_grasp in self._H_grasps:
-        #     scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
-
-        # scene.show()
