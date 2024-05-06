@@ -10,6 +10,7 @@ sensor_msgs/CameraInfo camera_info
 
 # pointcloud
 sensor_msgs/PointCloud2 cloud # in world frame
+sensor_msgs/PointCloud2 pointcloud_segmented
 
 # camera parameers
 geometry_msgs/PoseStamped view_point
