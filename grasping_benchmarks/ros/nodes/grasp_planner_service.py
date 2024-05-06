@@ -11,6 +11,7 @@ import numpy as np
 import ros_numpy
 
 from grasping_benchmarks.base import CameraData, BaseGraspPlanner, Grasp
+from grasping_benchmarks.base.transformations import rotation_matrix_to_quaternion
 from geometry_msgs.msg import PoseStamped
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,
@@ -20,7 +21,7 @@ from grasping_benchmarks_ros.srv import (
 from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
 
-def grasp_to_ros_message(grasp) -> BenchmarkGrasp:
+def grasp_to_ros_message(grasp: Grasp) -> BenchmarkGrasp:
     grasp_msg = BenchmarkGrasp()
 
     pose = PoseStamped()
@@ -29,10 +30,11 @@ def grasp_to_ros_message(grasp) -> BenchmarkGrasp:
     pose.pose.position.x = grasp.position[0]
     pose.pose.position.y = grasp.position[1]
     pose.pose.position.z = grasp.position[2]
-    pose.pose.orientation.x = grasp.quaternion[0]
-    pose.pose.orientation.y = grasp.quaternion[1]
-    pose.pose.orientation.z = grasp.quaternion[2]
-    pose.pose.orientation.w = grasp.quaternion[3]
+    grasp_quaternion = rotation_matrix_to_quaternion(grasp.rotation)
+    pose.pose.orientation.x = grasp_quaternion[0]
+    pose.pose.orientation.y = grasp_quaternion[1]
+    pose.pose.orientation.z = grasp_quaternion[2]
+    pose.pose.orientation.w = grasp_quaternion[3]
     grasp_msg.pose = pose
 
     grasp_msg.score.data = grasp.score
@@ -45,14 +47,17 @@ def service_request_to_camera_data(req: GraspPlannerRequest):
     camera_pose = ros_numpy.numpify(req.view_point.pose)
 
     camera_data = CameraData(
-        rgb_image=ros_numpy.numpify(req.color_image),
+        rgb_image=ros_numpy.numpify(req.rgb_image),
         depth_image=ros_numpy.numpify(req.depth_image),
-        pointcloud=ros_numpy.numpify(req.cloud).view(np.float32).reshape(-1, 3).copy(),
+        pointcloud=ros_numpy.numpify(req.pointcloud)
+        .view(np.float32)
+        .reshape(-1, 3)
+        .copy(),
         pointcloud_segmented=ros_numpy.numpify(req.pointcloud_segmented)
         .view(np.float32)
         .reshape(-1, 3)
         .copy(),
-        segmentation_image=ros_numpy.numpify(req.seg_image),
+        segmentation_image=ros_numpy.numpify(req.segmentation_image),
         camera_intrinsics=np.array(req.camera_info.K).reshape(3, 3),
         camera_position=camera_pose[:3, 3],
         camera_rotation=camera_pose[:3, :3],
