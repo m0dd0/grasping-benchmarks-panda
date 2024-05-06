@@ -1,0 +1,22 @@
+cam_height: 480
+cam_pos: !!python/tuple
+- 0.5
+- 0.0
+- 1
+cam_quat:
+- 0.7071067811865476
+- 0.0
+- 0.0
+- -0.7071067811865475
+cam_width: 640
+factory_string: mj_beta
+object_id: 011_banana
+object_pos: !!python/tuple
+- 0.5
+- 0.0
+- 0.2
+object_quat: !!python/tuple
+- 0
+- 1
+- 0
+- 0

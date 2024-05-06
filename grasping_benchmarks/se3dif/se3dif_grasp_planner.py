@@ -1,11 +1,10 @@
 from typing import List, Dict
 
-from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp6D
+from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp
 
 from se3dif.models.loader import load_model
 from se3dif.samplers import Grasp_AnnealedLD
 from se3dif.utils import to_numpy, to_torch
-from se3dif.visualization import create_gripper_marker
 
 
 class Se3DifGraspPlanner(BaseGraspPlanner):
@@ -32,7 +31,7 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
 
     def plan_grasps(
         self, camera_data: CameraData, n_candidates: int = 1
-    ) -> List[Grasp6D]:
+    ) -> List[Grasp]:
         """Computes the given number of grasp candidates from from the given
         camera data.
 
@@ -40,16 +39,22 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             camera_data (CameraData): Contains the data to compute the grasp poses
             n_candidates (int, optional): The number of grasp candidates to compute. Defaults to 1.
         """
-        self._camera_data = camera_data
+        pointcloud = camera_data.pointcloud_segmented
 
         self._model.set_latent(
-            to_torch(camera_data.pointcloud[None, ...], self.cfg["device"]),
+            to_torch(pointcloud[None, ...], self.cfg["device"]),
             batch=self.cfg["batch"],
         )
 
-        self._H_grasps = to_numpy(self._generator.sample())
+        grasps = [
+            Grasp(
+                position=H_grasp[:3, 3],
+                rotation=H_grasp[:3, :3],
+            )
+            for H_grasp in to_numpy(self._generator.sample())
+        ]
 
-        return self._H_grasps
+        return grasps
 
     def visualize(self):
         """Plot the grasp poses"""
