@@ -8,8 +8,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from grasping_benchmarks.base.typing import NpArray
-
 ROS_AVAILABLE = True
 try:
     from grasping_benchmarks_ros.srv import GraspPlannerRequest
@@ -45,13 +43,14 @@ def service_request_to_camera_data(req: "GraspPlannerRequest"):
 
 @dataclass
 class CameraData:
-    rgb_img: np.ndarray  # NpArray["H, W, 3", np.uint8] = None
-    depth_img: np.ndarray  # NpArray["H, W", np.uint16] = None
-    pointcloud: np.ndarray  # NpArray["N, 3", np.float32] = None
-    seg_img: np.ndarray  # NpArray["H, W", np.uint8] = None
-    cam_intrinsics: np.ndarray  # NpArray["3, 3", np.float32] = None
-    cam_pos: np.ndarray  # NpArray["3", np.float32] = None
-    cam_rot: np.ndarray  # NpArray["3, 3", np.float32] = None
+    rgb_img: np.ndarray = None  # NpArray["H, W, 3", np.uint8] = None
+    depth_img: np.ndarray = None  # NpArray["H, W", np.uint16] = None
+    pointcloud: np.ndarray = None  # NpArray["N, 3", np.float32] = None
+    pointcloud_segmented: np.ndarray = None  # NpArray["N, 3", np.float32] = None
+    seg_img: np.ndarray = None  # NpArray["H, W", np.uint8] = None
+    cam_intrinsics: np.ndarray = None  # NpArray["3, 3", np.float32] = None
+    cam_pos: np.ndarray = None  # NpArray["3", np.float32] = None
+    cam_rot: np.ndarray = None  # NpArray["3, 3", np.float32] = None
 
 
 class BaseGraspPlanner(object):
