@@ -154,7 +154,7 @@
     <arg name="ns" default="se3dif_bench" />
     <arg name="grasp_planner_node_name" default="se3dif_grasp_planner_node" />
     <arg name="grasp_planner_service_name" default="se3dif_grasp_planner_service" />
-    <arg name="config_file" default="$(find grasping_benchmarks_ros)/se3dif_ros/cfg/base_config.yaml" />
+    <arg name="config_file" default="$(find grasping_benchmarks_ros)/se3dif_ros/cfg/partial_pointcloud_config.yaml" />
     <arg name="debug_path" default="$(find grasping_benchmarks_ros)/se3dif_ros/debug_information" />
 
     <node name="$(arg grasp_planner_node_name)" pkg="grasping_benchmarks_ros" type="se3dif_grasp_planner_service.py" ns="$(arg ns)" output="screen">

@@ -1,0 +1,8 @@
+device: cuda:0
+pretrained_model: grasp_dif_multi
+batch: 10
+n_points: 1000
+T: 70
+T_fit: 50
+k_steps: 2
+object_target_size: 2.2 
