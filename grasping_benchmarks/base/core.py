@@ -12,13 +12,14 @@ import numpy as np
 
 @dataclass
 class CameraData:
-    rgb_img: np.ndarray = None  # NpArray["H, W, 3", np.uint8] = None
-    depth_img: np.ndarray = None  # NpArray["H, W", np.uint16] = None
+    rgb_image: np.ndarray = None  # NpArray["H, W, 3", np.uint8] = None
+    depth_image: np.ndarray = None  # NpArray["H, W", np.uint16] = None
     pointcloud: np.ndarray = None  # NpArray["N, 3", np.float32] = None
-    seg_img: np.ndarray = None  # NpArray["H, W", np.uint8] = None
-    cam_intrinsics: np.ndarray = None  # NpArray["3, 3", np.float32] = None
-    cam_pos: np.ndarray = None  # NpArray["3", np.float32] = None
-    cam_rot: np.ndarray = None  # NpArray["3, 3", np.float32] = None
+    pointcloud_segmented: np.ndarray = None  # NpArray["N, 3", np.float32] = None
+    segmentation_image: np.ndarray = None  # NpArray["H, W", np.uint8] = None
+    camera_intrinsics: np.ndarray = None  # NpArray["3, 3", np.float32] = None
+    camera_position: np.ndarray = None  # NpArray["3", np.float32] = None
+    camera_rotation: np.ndarray = None  # NpArray["3, 3", np.float32] = None
 
 
 @dataclass
@@ -54,11 +55,6 @@ class BaseGraspPlanner(object):
             camera_data (CameraData): Contains the data to compute the grasp poses
             n_candidates (int, optional): The number of grasp candidates to compute. Defaults to 1.
         """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def visualize(self):
-        """Plot the lastly computed grasp poses"""
         raise NotImplementedError()
 
     @property

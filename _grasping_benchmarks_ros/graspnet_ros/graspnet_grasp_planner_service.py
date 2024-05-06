@@ -29,7 +29,7 @@ from grasping_benchmarks.base.transformations import (
     quaternion_to_matrix,
     matrix_to_quaternion,
 )
-from grasping_benchmarks.base.grasp_planner_base import CameraData
+from grasping_benchmarks.base.core import CameraData
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,
     GraspPlannerRequest,

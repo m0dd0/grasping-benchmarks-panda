@@ -8,7 +8,7 @@ import warnings
 import yaml
 
 import numpy as np
-from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
+from grasping_benchmarks.base.core import BaseGraspPlanner, CameraData
 from grasping_benchmarks.base.grasp_data import Grasp6D
 import superquadric_bindings as sb
 from grasping_benchmarks.base import transformations as tr

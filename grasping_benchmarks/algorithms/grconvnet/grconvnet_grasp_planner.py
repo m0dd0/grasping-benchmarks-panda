@@ -172,12 +172,12 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
         self._camera_data = camera_data
 
         # get all the necesssary data from the camera data
-        rgb = camera_data.rgb_img
-        depth = camera_data.depth_img
-        cam_intrinsics = camera_data.cam_intrinsics
-        cam_pos = camera_data.cam_pos
-        cam_rot = camera_data.cam_rot
-        seg_img = camera_data.seg_img
+        rgb = camera_data.rgb_image
+        depth = camera_data.depth_image
+        cam_intrinsics = camera_data.camera_intrinsics
+        cam_pos = camera_data.camera_position
+        cam_rot = camera_data.camera_rotation
+        seg_img = camera_data.segmentation_image
 
         # for some conversions in the preprocessing pipeline certain encodings of the image are needed
         # the depth image in the original implementation is given in meters as float32
@@ -248,16 +248,16 @@ class GRConvNetGraspPlanner(BaseGraspPlanner):
     def visualize(self):
         """Plot the grasp poses"""
         fig = visualization.create_overview_fig(
-            rgb_orig=self._camera_data.rgb_img,
+            rgb_orig=self._camera_data.rgb_image,
             rgb_preprocessed=self.preprocessed_rgb,
             quality_img=self.quality_img,
             angle_img=self.angle_img,
             width_img=self.width_img,
             image_grasps=self.image_grasps,
             world_grasps=[self._convert_grasp_from_6D(g) for g in self._grasp_poses],
-            camera_matrix=self._camera_data.cam_intrinsics,
-            camera_rotation=self._camera_data.cam_rot,
-            camera_position=self._camera_data.cam_pos,
+            camera_matrix=self._camera_data.camera_intrinsics,
+            camera_rotation=self._camera_data.camera_rotation,
+            camera_position=self._camera_data.camera_position,
             figsize=(10, 10),
         )
         plt.close()

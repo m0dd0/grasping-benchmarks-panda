@@ -59,7 +59,7 @@ from gqcnn.grasping import (
 from gqcnn.utils import GripperMode, NoValidGraspsException
 
 from grasping_benchmarks.base import transformations
-from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
+from grasping_benchmarks.base.core import BaseGraspPlanner, CameraData
 from grasping_benchmarks.base.grasp_data import Grasp6D
 
 
@@ -225,33 +225,33 @@ class DexnetGraspPlanner(BaseGraspPlanner):
         camera_data = CameraData()
 
         # Create images
-        camera_data.rgb_img = ColorImage(rgb, frame=cam_intr_frame)
-        camera_data.depth_img = DepthImage(depth, frame=cam_intr_frame)
+        camera_data.rgb_image = ColorImage(rgb, frame=cam_intr_frame)
+        camera_data.depth_image = DepthImage(depth, frame=cam_intr_frame)
 
         if seg_mask.size > 0:
-            camera_data.seg_img = BinaryImage(seg_mask, cam_intr_frame)
+            camera_data.segmentation_image = BinaryImage(seg_mask, cam_intr_frame)
 
         # Check image sizes
         if (
-            camera_data.rgb_img.height != camera_data.depth_img.height
-            or camera_data.rgb_img.width != camera_data.depth_img.width
+            camera_data.rgb_image.height != camera_data.depth_image.height
+            or camera_data.rgb_image.width != camera_data.depth_image.width
         ):
 
             msg = (
                 "Color image and depth image must be the same shape! Color"
                 " is %d x %d but depth is %d x %d"
             ) % (
-                camera_data.rgb_img.height,
-                camera_data.rgb_img.width,
-                camera_data.depth_img.height,
-                camera_data.depth_img.width,
+                camera_data.rgb_image.height,
+                camera_data.rgb_image.width,
+                camera_data.depth_image.height,
+                camera_data.depth_image.width,
             )
 
             raise AssertionError(msg)
 
         if (
-            camera_data.rgb_img.height < self.min_height
-            or camera_data.rgb_img.width < self.min_width
+            camera_data.rgb_image.height < self.min_height
+            or camera_data.rgb_image.width < self.min_width
         ):
 
             msg = (
@@ -260,25 +260,25 @@ class DexnetGraspPlanner(BaseGraspPlanner):
             ) % (
                 self.min_height,
                 self.min_width,
-                camera_data.rgb_img.height,
-                camera_data.rgb_img.width,
+                camera_data.rgb_image.height,
+                camera_data.rgb_image.width,
             )
 
             raise AssertionError(msg)
 
         if (
-            camera_data.rgb_img.height != camera_data.seg_img.height
-            or camera_data.rgb_img.width != camera_data.seg_img.width
+            camera_data.rgb_image.height != camera_data.segmentation_image.height
+            or camera_data.rgb_image.width != camera_data.segmentation_image.width
         ):
 
             msg = (
                 "Images and segmask must be the same shape! Color image is"
                 " %d x %d but segmask is %d x %d"
             ) % (
-                camera_data.rgb_img.height,
-                camera_data.rgb_img.width,
-                camera_data.seg_img.height,
-                camera_data.seg_img.width,
+                camera_data.rgb_image.height,
+                camera_data.rgb_image.width,
+                camera_data.segmentation_image.height,
+                camera_data.segmentation_image.width,
             )
 
             raise AssertionError(msg)

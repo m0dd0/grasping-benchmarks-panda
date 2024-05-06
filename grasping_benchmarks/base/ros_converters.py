@@ -11,45 +11,37 @@ from grasping_benchmarks_ros.srv import GraspPlannerRequest
 from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
 
-def grasp_data_to_service_response(self) -> BenchmarkGrasp:
+def grasp_to_ros_message(grasp) -> BenchmarkGrasp:
     grasp_msg = BenchmarkGrasp()
 
-    p = PoseStamped()
-    p.header.frame_id = self.ref_frame
-    p.header.stamp = rospy.Time.now()
-    p.pose.position.x = self.position[0]
-    p.pose.position.y = self.position[1]
-    p.pose.position.z = self.position[2]
-    p.pose.orientation.x = self.quaternion[0]
-    p.pose.orientation.y = self.quaternion[1]
-    p.pose.orientation.z = self.quaternion[2]
-    p.pose.orientation.w = self.quaternion[3]
-    grasp_msg.pose = p
+    pose = PoseStamped()
+    pose.header.frame_id = grasp.ref_frame
+    pose.header.stamp = rospy.Time.now()
+    pose.pose.position.x = grasp.position[0]
+    pose.pose.position.y = grasp.position[1]
+    pose.pose.position.z = grasp.position[2]
+    pose.pose.orientation.x = grasp.quaternion[0]
+    pose.pose.orientation.y = grasp.quaternion[1]
+    pose.pose.orientation.z = grasp.quaternion[2]
+    pose.pose.orientation.w = grasp.quaternion[3]
+    grasp_msg.pose = pose
 
-    grasp_msg.score.data = self.score
-    grasp_msg.width.data = self.width
+    grasp_msg.score.data = grasp.score
+    grasp_msg.width.data = grasp.width
 
     return grasp_msg
 
 
 def service_request_to_camera_data(req: GraspPlannerRequest):
-    rgb = ros_numpy.numpify(req.color_image)
-    depth = ros_numpy.numpify(req.depth_image)
-    seg = ros_numpy.numpify(req.seg_image)
-
-    pc = ros_numpy.numpify(req.cloud)
-
-    camera_matrix = np.array(req.camera_info.K).reshape(3, 3)
-
-    # 4x4 homogenous tranformation matrix
     camera_trafo_h = ros_numpy.numpify(req.view_point.pose)
 
     camera_data = CameraData(
-        rgb,
-        depth,
-        pc,  # TODO check format and convert if needed
-        seg,
-        camera_matrix,
+        rgb_image=ros_numpy.numpify(req.color_image),
+        depth_image=ros_numpy.numpify(req.depth_image),
+        pointcloud=ros_numpy.numpify(req.cloud).view(np.float32).reshape(-1, 3).copy(),
+        pointcloud_segmented=ros_numpy.numpify(req.pointcloud_segmented).view(np.float32).reshape(-1, 3).copy(),
+        segmentation_image=ros_numpy.numpify(req.seg_image),
+        camera_matrix=np.array(req.camera_info.K).reshape(3, 3),
         camera_trafo_h[:3, 3],
         camera_trafo_h[:3, :3],
     )

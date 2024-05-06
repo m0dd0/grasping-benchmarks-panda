@@ -7,19 +7,58 @@ from pathlib import Path
 
 import yaml
 import rospy
+import numpy as np
+import ros_numpy
 
-from grasping_benchmarks.base import CameraData, BaseGraspPlanner
-from grasping_benchmarks.base.ros_converters import (
-    service_request_to_camera_data,
-    grasp_data_to_service_response,
-)
-from grasping_benchmarks.base import Grasp
-
+from grasping_benchmarks.base import CameraData, BaseGraspPlanner, Grasp
+from geometry_msgs.msg import PoseStamped
 from grasping_benchmarks_ros.srv import (
     GraspPlanner,
     GraspPlannerRequest,
     GraspPlannerResponse,
 )
+from grasping_benchmarks_ros.msg import BenchmarkGrasp
+
+
+def grasp_to_ros_message(grasp) -> BenchmarkGrasp:
+    grasp_msg = BenchmarkGrasp()
+
+    pose = PoseStamped()
+    pose.header.frame_id = grasp.ref_frame
+    pose.header.stamp = rospy.Time.now()
+    pose.pose.position.x = grasp.position[0]
+    pose.pose.position.y = grasp.position[1]
+    pose.pose.position.z = grasp.position[2]
+    pose.pose.orientation.x = grasp.quaternion[0]
+    pose.pose.orientation.y = grasp.quaternion[1]
+    pose.pose.orientation.z = grasp.quaternion[2]
+    pose.pose.orientation.w = grasp.quaternion[3]
+    grasp_msg.pose = pose
+
+    grasp_msg.score.data = grasp.score
+    grasp_msg.width.data = grasp.width
+
+    return grasp_msg
+
+
+def service_request_to_camera_data(req: GraspPlannerRequest):
+    camera_pose = ros_numpy.numpify(req.view_point.pose)
+
+    camera_data = CameraData(
+        rgb_image=ros_numpy.numpify(req.color_image),
+        depth_image=ros_numpy.numpify(req.depth_image),
+        pointcloud=ros_numpy.numpify(req.cloud).view(np.float32).reshape(-1, 3).copy(),
+        pointcloud_segmented=ros_numpy.numpify(req.pointcloud_segmented)
+        .view(np.float32)
+        .reshape(-1, 3)
+        .copy(),
+        segmentation_image=ros_numpy.numpify(req.seg_image),
+        camera_intrinsics=np.array(req.camera_info.K).reshape(3, 3),
+        camera_position=camera_pose[:3, 3],
+        camera_rotation=camera_pose[:3, :3],
+    )
+
+    return camera_data
 
 
 class GraspPlannerService:
@@ -53,7 +92,8 @@ class GraspPlannerService:
 
         grasps: List[Grasp] = self._planner.plan_grasps(camera_data)
 
-        response = grasp_data_to_service_response(grasps)
+        response = GraspPlannerResponse()
+        response.grasp_candidates = [grasp_to_ros_message(grasp) for grasp in grasps]
 
         return response
 

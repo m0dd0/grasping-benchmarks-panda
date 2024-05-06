@@ -41,7 +41,7 @@ from grasping_benchmarks_ros.srv import (
 )
 from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
-from grasping_benchmarks.base.grasp_planner_base import CameraData
+from grasping_benchmarks.base.core import CameraData
 
 from grasping_benchmarks.dexnet.dexnet_grasp_planner import DexnetGraspPlanner
 
@@ -170,9 +170,9 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
 
         # --- create CameraData struct --- #
         camera_data = CameraData()
-        camera_data.rgb_img = color_im
-        camera_data.depth_img = depth_im
-        camera_data.seg_img = seg_img
+        camera_data.rgb_image = color_im
+        camera_data.depth_image = depth_im
+        camera_data.segmentation_image = seg_img
         camera_data.intrinsic_params = camera_intr
 
         return camera_data
@@ -245,7 +245,7 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
 
         # create segmentation mask
         try:
-            camera_data.seg_img = BinaryImage(
+            camera_data.segmentation_image = BinaryImage(
                 self.cv_bridge.imgmsg_to_cv2(
                     raw_segmask, desired_encoding="passthrough"
                 ),
@@ -256,18 +256,18 @@ class DexnetGraspPlannerService(DexnetGraspPlanner):
             rospy.logerr(cv_bridge_exception)
 
         if (
-            camera_data.rgb_img.height != camera_data.seg_img.height
-            or camera_data.rgb_img.width != camera_data.seg_img.width
+            camera_data.rgb_image.height != camera_data.segmentation_image.height
+            or camera_data.rgb_image.width != camera_data.segmentation_image.width
         ):
 
             msg = (
                 "Images and segmask must be the same shape! Color image is"
                 " %d x %d but segmask is %d x %d"
             ) % (
-                camera_data.rgb_img.height,
-                camera_data.rgb_img.width,
-                camera_data.seg_img.height,
-                camera_data.seg_img.width,
+                camera_data.rgb_image.height,
+                camera_data.rgb_image.width,
+                camera_data.segmentation_image.height,
+                camera_data.segmentation_image.width,
             )
 
             rospy.logerr(msg)

@@ -30,7 +30,7 @@ from grasping_benchmarks_ros.msg import BenchmarkGrasp
 
 import superquadric_bindings as sb
 
-from grasping_benchmarks.base.grasp_planner_base import CameraData
+from grasping_benchmarks.base.core import CameraData
 
 from grasping_benchmarks.superquadric_based.superquadrics_grasp_planner import (
     SuperquadricsGraspPlanner,

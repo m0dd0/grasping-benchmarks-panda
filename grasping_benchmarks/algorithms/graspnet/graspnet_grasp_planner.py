@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import math
 import numpy as np
 
-from grasping_benchmarks.base.grasp_planner_base import BaseGraspPlanner, CameraData
+from grasping_benchmarks.base.core import BaseGraspPlanner, CameraData
 from grasping_benchmarks.base.grasp_data import Grasp6D
 from grasping_benchmarks.base import transformations as tr
 
@@ -260,8 +260,8 @@ class GraspNetGraspPlanner(BaseGraspPlanner):
         """
 
         camera_data = CameraData()
-        camera_data.rgb_img = rgb_image
-        camera_data.depth_img = depth_image
+        camera_data.rgb_image = rgb_image
+        camera_data.depth_image = depth_image
         intrinsic_matrix = np.array([[fx, skew, cx], [0, fy, cy], [0, 0, 1]])
         camera_data.intrinsic_params = {
             "fx": fx,
@@ -279,20 +279,20 @@ class GraspNetGraspPlanner(BaseGraspPlanner):
 
         # Remove missing depth readouts
         # Filter out zeros and readings beyond 2m
-        np.nan_to_num(camera_data.depth_img, copy=False, nan=0)
+        np.nan_to_num(camera_data.depth_image, copy=False, nan=0)
         invalid_mask = np.where(
-            np.logical_or(camera_data.depth_img == 0, camera_data.depth_img > 2)
+            np.logical_or(camera_data.depth_image == 0, camera_data.depth_image > 2)
         )
-        camera_data.depth_img[invalid_mask] = np.nan
+        camera_data.depth_image[invalid_mask] = np.nan
 
         # Obtain the (colored) scene point cloud from valid points
         self.scene_pc, selection = backproject(
-            camera_data.depth_img,
+            camera_data.depth_image,
             camera_data.intrinsic_params["matrix"],
             return_finite_depth=True,
             return_selection=True,
         )
-        pc_colors = camera_data.rgb_img.copy()
+        pc_colors = camera_data.rgb_image.copy()
         pc_colors = np.reshape(pc_colors, [-1, 3])
         pc_colors = pc_colors[selection, :]
         self.scene_pc_colors = pc_colors
