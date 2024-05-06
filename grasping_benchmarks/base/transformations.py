@@ -6,6 +6,7 @@ import math as m
 import warnings
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 # TODO refactor this
 
@@ -27,6 +28,18 @@ def rotation_and_position_to_homogeneous_matrix(
     homogeneous_matrix[:3, 3] = position
 
     return homogeneous_matrix
+
+
+def rotation_matrix_to_quaternion(rotation_matrix: np.ndarray) -> np.ndarray:
+    """Transform rotation matrix to quaternion (w,x,y,z)
+
+    Args:
+        rotation_matrix(np.ndarray): 3x3 rotation matrix
+
+    Returns:
+        np.ndarray: 4x1 quaternion
+    """
+    return Rotation.from_matrix(rotation_matrix).as_quat()[[3, 0, 1, 2]]
 
 
 def axis_angle_to_quaternion(vec_aa):
