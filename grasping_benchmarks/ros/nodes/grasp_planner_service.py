@@ -106,32 +106,16 @@ if __name__ == "__main__":
     importlib.reload(logging)
     logging.basicConfig(level=logging.INFO)
 
-    # get the planner class of the specified algorithm
-    algorithm_name = rospy.get_param("~algorithm")
-    if algorithm_name == "se3dif":
-        from grasping_benchmarks.algorithms.se3dif import Se3DifGraspPlanner
+    # getting the planner class
+    module_string = ".".join(rospy.get_param("planner_class").split(".")[:-1])
+    class_string = rospy.get_param("planner_class").split(".")[-1]
+    planner_class = getattr(importlib.import_module(module_string), class_string)
 
-        planner_class = Se3DifGraspPlanner
-    elif algorithm_name == "grconvnet":
-        raise NotImplemented
-    # TODO ...
-    else:
-        raise ValueError(f"Unknown algorithm {algorithm_name}")
+    algorithm_config = rospy.get_param("~")
+    logging.info("Using algorithm config: %s", algorithm_config)
 
-    # getting the config file
-    # TODO put this to ros parameter server
-    config_file = rospy.get_param("~config_file")
-    if not config_file:
-        config_file = (
-            Path(__file__).parent.parent.parent
-            / "algorithms"
-            / algorithm_name
-            / "cfg"
-            / "base_config.yaml"
-        )
-    config = yaml.safe_load(config_file.read_text())
-    logging.info("Using config file %s", config_file)
+    planner = planner_class(algorithm_config)
 
-    planner = planner_class(config)
+    service = GraspPlannerService(planner, f"{class_string}_service")
 
-    service = GraspPlannerService(planner, f"grasp_planner_service_{algorithm_name}")
+    rospy.spin()

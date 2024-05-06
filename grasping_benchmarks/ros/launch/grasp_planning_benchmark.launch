@@ -1,8 +1,10 @@
 <launch>
-  <group ns="se3dif" if="$(arg se3dif)">
-    <rosparam file="$(find grasping_benchmarks_ros)/../algorithms/se3dif/cfg/base_config.yaml"/>
-    <node name="grasp_planner_node_se3dif" pkg="grasping_benchmarks_ros" type="grasp_planner_service.py" ns="se3dif" output="screen">
-      <param name="algorithm" value="se3dif" />
+  <arg name="algorithm" />
+  <group ns="se3dif" if="$(eval algorithm == 'se3dif')">
+    <arg name="configurations" default="$(find grasping_benchmarks_ros)/../algorithms/se3dif/cfg/base_config.yaml"/>
+    <param name="planner_class" value="grasping_benchmarks.algorithms.se3dif.Se3DifGraspPlanner" />
+    <node name="grasp_planner_node" pkg="grasping_benchmarks_ros" type="grasp_planner_service.py" output="screen">
+      <rosparam file="$(arg configurations)" command="load" />
     </node>
   </group>
 </launch>
