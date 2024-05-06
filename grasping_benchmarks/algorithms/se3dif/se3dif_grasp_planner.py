@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+import numpy as np
+
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp
 
 from se3dif.models.loader import load_model
@@ -41,6 +43,13 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
         """
         pointcloud = camera_data.pointcloud_segmented
 
+        # center and scale pointcloud
+        pointcloud_offset = np.mean(pointcloud, axis=0)
+        pointcloud -= pointcloud_offset
+        pointcloud_extents = np.max(pointcloud, axis=0) - np.min(pointcloud, axis=0)
+        scale_factor = self.cfg["object_target_size"] / np.max(pointcloud_extents)
+        pointcloud *= scale_factor
+
         self._model.set_latent(
             to_torch(pointcloud[None, ...], self.cfg["device"]),
             batch=self.cfg["batch"],
@@ -54,15 +63,15 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             for H_grasp in to_numpy(self._generator.sample())
         ]
 
+        # the rotation of the grasp is invariant to the pointcloud offset and scale
+        # but the position is not. Therefore, we need to transform the position back
+        # to the original pointcloud frame
+        grasps = [
+            Grasp(
+                position=grasp.position / scale_factor + pointcloud_offset,
+                rotation=grasp.rotation,
+            )
+            for grasp in grasps
+        ]
+
         return grasps
-
-    def visualize(self):
-        """Plot the grasp poses"""
-        raise NotImplementedError
-        # scene = trimesh.Scene()
-        # scene.add_geometry(self._mesh)
-
-        # for H_grasp in self._H_grasps:
-        #     scene.add_geometry(create_gripper_marker().apply_transform(H_grasp))
-
-        # scene.show()
