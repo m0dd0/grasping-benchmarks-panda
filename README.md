@@ -16,7 +16,12 @@ However there is no Documentation on how the pointclouds should be preprocessed 
 Therfore, the wrapper in this repository tries to scale the pointclouds so that there longest axis is approximately the size of the longest axis of the pointclouds the model was trained on.
 The scaling can be controlled by the `object_target_size` parameter in the configuration file.
 
-To experiment with the performance the notebooks in the `se3dif/notebooks` folder can be used.
+Another problem is that in the original codebase the object by a factor of 8. However, this factor is not documented anywhere and it is not clear why this factor is used. Also a weird scaling of the returned grasps goes on in order to make the grasps fit the original pointcloud. This is also not documented anywhere and it is not clear what the resulting dimensions are.
+The wrapper in this repo tries to reeingeneer this scaling as good as possible but it is not clear if the scaling is correct.
+
+### Parameters
+The following parameters can be set in the configuration file:
+- 
 
 ### GrConvNet
 
