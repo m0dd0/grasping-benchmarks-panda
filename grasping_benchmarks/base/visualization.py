@@ -13,7 +13,7 @@ def panda_gripper_trimesh(
     hand_height: float = 0.127,
     finger_height: float = 0.05,
     gripper_width: float = 0.105,
-    segment_radius: float = 0.01,
+    segment_radius: float = 0.005,
     color: Tuple[int, int, int] = (0, 0, 0),
 ) -> trimesh.Trimesh:
     """Creates a simple trimesh representation of the Panda gripper.
@@ -89,7 +89,7 @@ def visualize_grasp_pointcloud(
         pointcloud = pointcloud.sample(max_pointcloud_points)
 
     for point in pointcloud:
-        scene.add_geometry(trimesh.primitives.Sphere(radius=0.02, center=point))
+        scene.add_geometry(trimesh.primitives.Sphere(radius=0.001, center=point))
 
     for grasp in grasps:
         gripper_trimesh = panda_gripper_trimesh()

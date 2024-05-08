@@ -41,7 +41,8 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             camera_data (CameraData): Contains the data to compute the grasp poses
             n_candidates (int, optional): The number of grasp candidates to compute. Defaults to 1.
         """
-        pointcloud = camera_data.pointcloud_segmented
+        # we dont want to modify the original camera data pointcloud, so we need to copy it
+        pointcloud = camera_data.pointcloud_segmented.copy()
 
         # center and scale pointcloud
         pointcloud_offset = np.mean(pointcloud, axis=0)
