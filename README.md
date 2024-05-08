@@ -14,6 +14,7 @@ Although the original repository provides a script to operate on partial pointlc
 The algorithm also seems be very sensitive to the size of the pointclouds.
 However there is no Documentation on how the pointclouds should be preprocessed to get the best performance.
 Therfore, the wrapper in this repository tries to scale the pointclouds so that there longest axis is approximately the size of the longest axis of the pointclouds the model was trained on.
+The scaling can be controlled by the `object_target_size` parameter in the configuration file.
 
 To experiment with the performance the notebooks in the `se3dif/notebooks` folder can be used.
 
