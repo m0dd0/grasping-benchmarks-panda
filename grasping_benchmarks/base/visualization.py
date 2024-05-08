@@ -65,7 +65,10 @@ def panda_gripper_trimesh(
 
 
 def visualize_grasp_pointcloud(
-    camera_data: CameraData, grasps: List[Grasp], max_pointcloud_points: int = None
+    camera_data: CameraData,
+    grasps: List[Grasp],
+    max_pointcloud_points: int = None,
+    show_coordinate_system: bool = True,
 ) -> trimesh.Scene:
     """Visualizes the given grasp candidates in the given camera data.
 
@@ -74,6 +77,7 @@ def visualize_grasp_pointcloud(
         grasps (List[Grasp]): The grasp candidates to visualize
         max_pointcloud_points (int, optional): The maximum number of points to sample from
             the pointcloud. Defaults to all points.
+        show_coordinate_system (bool, optional): Whether to show the coordinate system. Defaults to True.
 
     Returns:
         trimesh.Scene: The scene containing the camera data and the grasp candidates
@@ -98,11 +102,12 @@ def visualize_grasp_pointcloud(
         )
         scene.add_geometry(gripper_trimesh)
 
-    coordinate_system = trimesh.creation.axis(
-        origin_size=0.04,
-        axis_radius=0.01,
-        axis_length=1,
-    )
-    scene.add_geometry(coordinate_system)
+    if show_coordinate_system:
+        coordinate_system = trimesh.creation.axis(
+            origin_size=0.04,
+            axis_radius=0.01,
+            axis_length=1,
+        )
+        scene.add_geometry(coordinate_system)
 
     return scene
