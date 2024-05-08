@@ -98,6 +98,15 @@ class GraspPlannerService:
         response = GraspPlannerResponse()
         response.grasp_candidates = [grasp_to_ros_message(grasp) for grasp in grasps]
 
+        logging.info(
+            "Best grasp: %s",
+            (
+                sorted(response.grasp_candidates, lambda g: g.score)
+                if response.grasp_candidates
+                else None
+            ),
+        )
+
         return response
 
 

@@ -91,4 +91,6 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             for grasp in grasps_inference
         ]
 
-        return grasps_retransformed, grasps_inference, pointcloud_inference
+        # now the grasp is in camera frame
+
+        return grasps_retransformed  # , grasps_inference, pointcloud_inference
