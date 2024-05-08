@@ -3,9 +3,7 @@
 import logging
 from typing import List
 import importlib
-from pathlib import Path
 
-import yaml
 import rospy
 import numpy as np
 import ros_numpy
