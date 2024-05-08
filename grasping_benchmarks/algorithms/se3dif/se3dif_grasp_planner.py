@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from grasping_benchmarks.base import BaseGraspPlanner, CameraData, Grasp
 
@@ -64,25 +65,30 @@ class Se3DifGraspPlanner(BaseGraspPlanner):
             batch=self.cfg["batch"],
         )
 
+        H_grasps = to_numpy(self._generator.sample())
+
         grasps_inference = [
             Grasp(
                 position=H_grasp[:3, 3],
                 rotation=H_grasp[:3, :3],
             )
-            for H_grasp in to_numpy(self._generator.sample())
+            for H_grasp in H_grasps
         ]
 
+        # in the se3dif package the grasp axis is along the z-axis of the gripper coordinate system
+        # and the gripper closes along the x-axis of the gripper coordinate system
+        # BUT in our simulation the gripper closes along the y-axis of the gripper coordinate system
+        # therfore the rotation of the grasp needs to be rotated by 90 degrees around the z-axis
         # the rotation of the grasp is invariant to the pointcloud offset and scale
         # but the position is not. Therefore, we need to transform the position back
         # to the original pointcloud frame
+        rotation = Rotation.from_euler("xyz", [0, 0, np.pi / 2])
         grasps_retransformed = [
             Grasp(
                 position=grasp.position / scale_factor + pointcloud_offset,
-                rotation=grasp.rotation,
+                rotation=grasp.rotation @ rotation.as_matrix(),
             )
             for grasp in grasps_inference
         ]
-
-        # in the se3
 
         return grasps_retransformed, grasps_inference, pointcloud_inference
